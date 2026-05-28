@@ -11,23 +11,17 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
-        /* نظام الألوان الفخم الجديد: أسود × أحمر × أبيض */
         :root {
             --bg-gradient: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
             --panel-bg: rgba(26, 26, 26, 0.75);
-            --accent-red: #dc2626;      
-            --accent-red-glow: #ef4444; 
-            --text-main: #ffffff;        
-            --text-muted: #a3a3a3;      
+            --accent-red: #dc2626;
+            --accent-red-glow: #ef4444;
+            --text-main: #ffffff;
+            --text-muted: #a3a3a3;
             --border-color: rgba(255, 255, 255, 0.1);
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Cairo', sans-serif;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
 
         body {
             background: var(--bg-gradient);
@@ -42,98 +36,56 @@
         }
 
         .blur-circle {
-            position: absolute;
-            width: 400px;
-            height: 400px;
-            background: radial-gradient(circle, rgba(220, 38, 38, 0.12) 0%, transparent 70%);
-            top: -100px;
-            left: -100px;
-            z-index: -1;
+            position: absolute; width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(220,38,38,0.12) 0%, transparent 70%);
+            top: -100px; left: -100px; z-index: -1;
         }
         .blur-circle-2 {
-            position: absolute;
-            width: 500px;
-            height: 500px;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
-            bottom: -150px;
-            right: -150px;
-            z-index: -1;
+            position: absolute; width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+            bottom: -150px; right: -150px; z-index: -1;
         }
 
         .main-wrapper {
-            width: 100%;
-            max-width: 950px;
+            width: 100%; max-width: 1100px;
             background: var(--panel-bg);
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
             border: 1px solid var(--border-color);
             border-radius: 24px;
-            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.9);
+            box-shadow: 0 25px 60px -15px rgba(0,0,0,0.9);
             padding: 40px;
-            position: relative;
-            z-index: 10;
+            position: relative; z-index: 10;
         }
 
-        header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
+        header { text-align: center; margin-bottom: 40px; }
         header h1 {
-            font-size: 2.4rem;
-            font-weight: 900;
+            font-size: 2.4rem; font-weight: 900;
             background: linear-gradient(to left, #ffffff, var(--accent-red-glow));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;
         }
-
-        header p {
-            color: var(--text-muted);
-            font-size: 1rem;
-        }
+        header p { color: var(--text-muted); font-size: 1rem; }
 
         .nav-mode {
-            display: flex;
-            background: rgba(10, 10, 10, 0.8);
-            padding: 6px;
-            border-radius: 14px;
-            width: fit-content;
-            margin: 0 auto 35px auto;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex; background: rgba(10,10,10,0.8);
+            padding: 6px; border-radius: 14px;
+            width: fit-content; margin: 0 auto 35px auto;
+            border: 1px solid rgba(255,255,255,0.05);
         }
-
         .mode-btn {
-            background: none;
-            border: none;
-            padding: 10px 28px;
-            font-size: 1rem;
-            font-weight: 700;
-            color: var(--text-muted);
-            cursor: pointer;
-            border-radius: 10px;
-            transition: all 0.4s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            background: none; border: none; padding: 10px 28px;
+            font-size: 1rem; font-weight: 700; color: var(--text-muted);
+            cursor: pointer; border-radius: 10px; transition: all 0.4s ease;
+            display: flex; align-items: center; gap: 8px;
         }
-
         .mode-btn.active {
-            background: var(--accent-red);
-            color: #ffffff;
-            box-shadow: 0 4px 20px rgba(220, 38, 38, 0.5);
+            background: var(--accent-red); color: #ffffff;
+            box-shadow: 0 4px 20px rgba(220,38,38,0.5);
         }
 
-        .view-section {
-            display: none;
-            animation: fadeIn 0.5s ease;
-        }
-
-        .view-section.active {
-            display: block;
-        }
+        .view-section { display: none; animation: fadeIn 0.5s ease; }
+        .view-section.active { display: block; }
 
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
@@ -141,186 +93,196 @@
         }
 
         .form-section-card {
-            background: rgba(10, 10, 10, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.03);
-            padding: 25px;
-            border-radius: 16px;
-            margin-bottom: 25px;
+            background: rgba(10,10,10,0.4);
+            border: 1px solid rgba(255,255,255,0.03);
+            padding: 25px; border-radius: 16px; margin-bottom: 25px;
         }
-
         .section-title {
-            font-size: 1.1rem;
-            color: #ffffff;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            border-bottom: 2px solid var(--accent-red);
-            padding-bottom: 8px;
+            font-size: 1.1rem; color: #ffffff; margin-bottom: 20px;
+            display: flex; align-items: center; gap: 10px;
+            border-bottom: 2px solid var(--accent-red); padding-bottom: 8px;
         }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+        .field-group { margin-bottom: 20px; }
+        .field-group label { display: block; font-size: 0.9rem; color: #e5e5e5; margin-bottom: 8px; font-weight: 600; }
 
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 25px;
-        }
-
-        .field-group {
-            margin-bottom: 20px;
-        }
-
-        .field-group label {
-            display: block;
-            font-size: 0.9rem;
-            color: #e5e5e5;
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-
-        .input-wrapper {
-            position: relative;
-        }
-
-        .input-wrapper i {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-muted);
-            transition: 0.3s;
-        }
+        .input-wrapper { position: relative; }
+        .input-wrapper i { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); transition: 0.3s; }
 
         input[type="text"], input[type="date"], input[type="tel"], input[type="password"], select {
-            width: 100%;
-            padding: 14px 45px 14px 15px;
-            background: rgba(10, 10, 10, 0.85);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            color: #ffffff;
-            font-size: 0.95rem;
-            outline: none;
-            transition: all 0.3s ease;
+            width: 100%; padding: 14px 45px 14px 15px;
+            background: rgba(10,10,10,0.85);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px; color: #ffffff; font-size: 0.95rem;
+            outline: none; transition: all 0.3s ease;
         }
-
         input:focus, select:focus {
             border-color: var(--accent-red-glow);
-            box-shadow: 0 0 12px rgba(239, 68, 68, 0.3);
-        }
-
-        input:focus + i, select:focus + i {
-            color: var(--accent-red-glow);
+            box-shadow: 0 0 12px rgba(239,68,68,0.3);
         }
 
         .file-upload-box {
-            border: 2px dashed rgba(255, 255, 255, 0.15);
-            background: rgba(10, 10, 10, 0.5);
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
-            position: relative;
-            transition: 0.3s;
+            border: 2px dashed rgba(255,255,255,0.15);
+            background: rgba(10,10,10,0.5);
+            border-radius: 12px; padding: 20px;
+            text-align: center; cursor: pointer;
+            position: relative; transition: 0.3s;
         }
-
-        .file-upload-box:hover {
-            border-color: var(--accent-red-glow);
-            background: rgba(220, 38, 38, 0.03);
-        }
-
-        .file-upload-box input[type="file"] {
-            position: absolute;
-            inset: 0;
-            opacity: 0;
-            cursor: pointer;
-        }
-
-        .file-upload-box i {
-            font-size: 1.8rem;
-            color: var(--text-muted);
-            margin-bottom: 10px;
-        }
+        .file-upload-box:hover { border-color: var(--accent-red-glow); background: rgba(220,38,38,0.03); }
+        .file-upload-box input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+        .file-upload-box i { font-size: 1.8rem; color: var(--text-muted); margin-bottom: 10px; }
 
         .btn-premium {
-            width: 100%;
-            padding: 16px;
+            width: 100%; padding: 16px;
             background: linear-gradient(135deg, var(--accent-red) 0%, #991b1b 100%);
-            border: none;
-            border-radius: 12px;
-            color: #ffffff;
-            font-size: 1.1rem;
-            font-weight: 800;
-            cursor: pointer;
-            box-shadow: 0 10px 25px rgba(220, 38, 38, 0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            transition: 0.3s;
+            border: none; border-radius: 12px; color: #ffffff;
+            font-size: 1.1rem; font-weight: 800; cursor: pointer;
+            box-shadow: 0 10px 25px rgba(220,38,38,0.3);
+            display: flex; align-items: center; justify-content: center;
+            gap: 10px; transition: 0.3s;
         }
-
-        .btn-premium:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 15px 30px rgba(220, 38, 38, 0.45);
-            filter: brightness(1.15);
-        }
+        .btn-premium:hover { transform: translateY(-2px); box-shadow: 0 15px 30px rgba(220,38,38,0.45); filter: brightness(1.15); }
 
         .admin-gate {
-            max-width: 420px;
-            margin: 40px auto;
-            background: rgba(10, 10, 10, 0.6);
-            padding: 30px;
-            border-radius: 18px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            max-width: 420px; margin: 40px auto;
+            background: rgba(10,10,10,0.6); padding: 30px;
+            border-radius: 18px; border: 1px solid rgba(255,255,255,0.05);
         }
 
+        /* ===== عداد اللاعبين ===== */
+        .stats-bar {
+            display: flex; gap: 16px; margin-bottom: 25px; flex-wrap: wrap;
+        }
+        .stat-card {
+            background: rgba(10,10,10,0.6);
+            border: 1px solid rgba(220,38,38,0.2);
+            border-radius: 14px; padding: 16px 24px;
+            display: flex; align-items: center; gap: 14px;
+            flex: 1; min-width: 160px;
+        }
+        .stat-icon {
+            width: 48px; height: 48px; border-radius: 12px;
+            background: rgba(220,38,38,0.15);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem; color: var(--accent-red-glow);
+        }
+        .stat-info .stat-num {
+            font-size: 2rem; font-weight: 900; color: #ffffff;
+            line-height: 1;
+        }
+        .stat-info .stat-label { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
+
+        /* ===== جدول اللاعبين ===== */
         .table-responsive {
-            overflow-x: auto;
-            border-radius: 12px;
-            background: rgba(10, 10, 10, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            overflow-x: auto; border-radius: 12px;
+            background: rgba(10,10,10,0.5);
+            border: 1px solid rgba(255,255,255,0.08);
         }
-
-        .premium-table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: right;
-            font-size: 0.9rem;
-        }
-
+        .premium-table { width: 100%; border-collapse: collapse; text-align: right; font-size: 0.88rem; }
         .premium-table th {
-            background: rgba(10, 10, 10, 0.9);
-            padding: 16px;
-            color: #ffffff;
-            border-bottom: 2px solid var(--accent-red);
+            background: rgba(10,10,10,0.9); padding: 14px 12px;
+            color: #ffffff; border-bottom: 2px solid var(--accent-red);
+            white-space: nowrap;
         }
-
         .premium-table td {
-            padding: 14px 16px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            color: #f3f3f3;
+            padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05);
+            color: #f3f3f3; vertical-align: middle;
         }
+        .premium-table tr:hover td { background: rgba(220,38,38,0.04); }
 
         .player-badge {
-            background: rgba(220, 38, 38, 0.15);
-            color: var(--accent-red-glow);
-            border: 1px solid rgba(220, 38, 38, 0.3);
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            font-weight: bold;
+            background: rgba(220,38,38,0.15); color: var(--accent-red-glow);
+            border: 1px solid rgba(220,38,38,0.3);
+            padding: 3px 8px; border-radius: 6px; font-size: 0.78rem; font-weight: bold;
+        }
+        .img-preview-round {
+            width: 42px; height: 42px; border-radius: 50%;
+            object-fit: cover; border: 2px solid var(--accent-red-glow);
         }
 
-        .img-preview-round {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid var(--accent-red-glow);
+        /* ===== أزرار الإجراءات ===== */
+        .action-btns { display: flex; gap: 6px; }
+        .btn-edit, .btn-delete {
+            border: none; border-radius: 8px; cursor: pointer;
+            padding: 7px 12px; font-size: 0.82rem; font-weight: 700;
+            display: flex; align-items: center; gap: 5px; transition: 0.2s;
         }
+        .btn-edit {
+            background: rgba(59,130,246,0.15); color: #60a5fa;
+            border: 1px solid rgba(59,130,246,0.3);
+        }
+        .btn-edit:hover { background: rgba(59,130,246,0.3); }
+        .btn-delete {
+            background: rgba(220,38,38,0.15); color: #f87171;
+            border: 1px solid rgba(220,38,38,0.3);
+        }
+        .btn-delete:hover { background: rgba(220,38,38,0.35); }
+
+        /* ===== مودال التعديل ===== */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(6px); z-index: 1000;
+            display: none; align-items: center; justify-content: center; padding: 20px;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal-box {
+            background: #1a1a1a; border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px; padding: 30px; width: 100%; max-width: 600px;
+            max-height: 90vh; overflow-y: auto;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.9);
+            animation: fadeIn 0.3s ease;
+        }
+        .modal-title {
+            font-size: 1.2rem; font-weight: 800; color: #fff;
+            border-bottom: 2px solid var(--accent-red); padding-bottom: 10px; margin-bottom: 20px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .modal-field label { font-size: 0.85rem; color: #ccc; margin-bottom: 6px; display: block; font-weight: 600; }
+        .modal-field input, .modal-field select {
+            width: 100%; padding: 11px 14px;
+            background: rgba(10,10,10,0.9);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 9px; color: #fff; font-size: 0.9rem; outline: none;
+        }
+        .modal-field input:focus, .modal-field select:focus {
+            border-color: var(--accent-red-glow);
+            box-shadow: 0 0 10px rgba(239,68,68,0.25);
+        }
+        .modal-actions { display: flex; gap: 12px; margin-top: 20px; }
+        .btn-save {
+            flex: 1; padding: 13px;
+            background: linear-gradient(135deg, var(--accent-red), #991b1b);
+            border: none; border-radius: 10px; color: #fff;
+            font-size: 1rem; font-weight: 800; cursor: pointer; transition: 0.3s;
+        }
+        .btn-save:hover { filter: brightness(1.15); }
+        .btn-cancel {
+            flex: 1; padding: 13px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px; color: #ccc;
+            font-size: 1rem; font-weight: 700; cursor: pointer; transition: 0.3s;
+        }
+        .btn-cancel:hover { background: rgba(255,255,255,0.1); }
+
+        /* ===== بحث ===== */
+        .search-bar {
+            position: relative; margin-bottom: 16px;
+        }
+        .search-bar input {
+            width: 100%; padding: 12px 45px 12px 15px;
+            background: rgba(10,10,10,0.7);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px; color: #fff; font-size: 0.95rem; outline: none;
+        }
+        .search-bar input:focus { border-color: var(--accent-red-glow); }
+        .search-bar i { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
 
         @media (max-width: 768px) {
-            .grid-2 { grid-template-columns: 1fr; gap: 10px; }
+            .grid-2, .modal-grid { grid-template-columns: 1fr; gap: 10px; }
             .main-wrapper { padding: 20px; }
+            .stats-bar { gap: 10px; }
         }
     </style>
 </head>
@@ -328,6 +290,68 @@
 
 <div class="blur-circle"></div>
 <div class="blur-circle-2"></div>
+
+<!-- مودال التعديل -->
+<div class="modal-overlay" id="editModal">
+    <div class="modal-box">
+        <div class="modal-title"><i class="fa-solid fa-pen-to-square" style="color:var(--accent-red-glow)"></i> تعديل بيانات اللاعب</div>
+        <input type="hidden" id="editPlayerId">
+        <div class="modal-grid">
+            <div class="modal-field" style="grid-column: span 2;">
+                <label>الاسم الكامل</label>
+                <input type="text" id="editName" placeholder="اسم اللاعب">
+            </div>
+            <div class="modal-field">
+                <label>الرقم القومي</label>
+                <input type="text" id="editNationalId" placeholder="14 رقم">
+            </div>
+            <div class="modal-field">
+                <label>تاريخ الميلاد</label>
+                <input type="date" id="editBirthDate">
+            </div>
+            <div class="modal-field" style="grid-column: span 2;">
+                <label>العنوان</label>
+                <input type="text" id="editAddress" placeholder="المحافظة - الحي - الشارع">
+            </div>
+            <div class="modal-field">
+                <label>الهاتف الأساسي</label>
+                <input type="tel" id="editPhone1" placeholder="01xxxxxxxxx">
+            </div>
+            <div class="modal-field">
+                <label>الهاتف الإضافي</label>
+                <input type="tel" id="editPhone2" placeholder="اختياري">
+            </div>
+            <div class="modal-field">
+                <label>الفئة الفنية</label>
+                <select id="editCategory">
+                    <option value="مدارس">مدارس</option>
+                    <option value="جونيور">جونيور</option>
+                    <option value="كادت">كادت</option>
+                    <option value="سينيور">سينيور</option>
+                </select>
+            </div>
+            <div class="modal-field">
+                <label>درجة الحزام</label>
+                <select id="editBeltGrade">
+                    <option value="لم يختبر بعد">لم يختبر بعد</option>
+                    <option value="ابيض">أبيض</option>
+                    <option value="اصفر">أصفر</option>
+                    <option value="اورانج">أورانج</option>
+                    <option value="اخضر">أخضر</option>
+                    <option value="ازرق">أزرق</option>
+                </select>
+            </div>
+            <div class="modal-field" style="grid-column: span 2;">
+                <label>تخصص ولي الأمر</label>
+                <input type="text" id="editParentJob" placeholder="الوظيفة / جهة العمل">
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-save" onclick="saveEdit()"><i class="fa-solid fa-floppy-disk"></i> حفظ التعديلات</button>
+            <button class="btn-cancel" onclick="closeModal()"><i class="fa-solid fa-xmark"></i> إلغاء</button>
+        </div>
+    </div>
+</div>
 
 <div class="main-wrapper">
     <header>
@@ -344,6 +368,7 @@
         </button>
     </div>
 
+    <!-- قسم التسجيل -->
     <div id="reg-view" class="view-section active">
         <form id="premiumForm">
             <div class="form-section-card">
@@ -444,15 +469,15 @@
                         <label>صورة اللاعب الشخصية:</label>
                         <div class="file-upload-box">
                             <i class="fa-solid fa-image"></i>
-                            <p style="font-size: 0.85rem; color: var(--text-muted);">اختر صورة شخصية حديثة</p>
+                            <p style="font-size:0.85rem;color:var(--text-muted)">اختر صورة شخصية حديثة</p>
                             <input type="file" id="playerImg" accept="image/*" required onchange="updateFileInfo(this)">
                         </div>
                     </div>
-                    <div class="file-group">
+                    <div class="field-group">
                         <label>صورة شهادة ميلاد اللاعب:</label>
                         <div class="file-upload-box">
                             <i class="fa-solid fa-file-invoice"></i>
-                            <p style="font-size: 0.85rem; color: var(--text-muted);">اختر صورة شهادة الميلاد</p>
+                            <p style="font-size:0.85rem;color:var(--text-muted)">اختر صورة شهادة الميلاد</p>
                             <input type="file" id="birthCertImg" accept="image/*" required onchange="updateFileInfo(this)">
                         </div>
                     </div>
@@ -465,9 +490,10 @@
         </form>
     </div>
 
+    <!-- قسم الإدارة -->
     <div id="admin-view" class="view-section">
         <div id="adminLoginView" class="admin-gate">
-            <h3 style="text-align: center; margin-bottom: 20px; color: #ffffff; border-bottom: 2px solid var(--accent-red); padding-bottom: 8px;">تسجيل دخول معتمد</h3>
+            <h3 style="text-align:center;margin-bottom:20px;color:#fff;border-bottom:2px solid var(--accent-red);padding-bottom:8px">تسجيل دخول معتمد</h3>
             <div class="field-group">
                 <label>اسم المستخدم:</label>
                 <div class="input-wrapper">
@@ -487,25 +513,66 @@
             </button>
         </div>
 
-        <div id="adminDashboardView" style="display: none;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
-                <h3 style="color: #ffffff; font-weight: 700;"><i class="fa-solid fa-table-list" style="color: var(--accent-red-glow);"></i> اللاعبين المعتمدين بالمنظومة</h3>
-                <button onclick="logoutAdmin()" style="padding: 8px 18px; background: #ef4444; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:700; box-shadow: 0 4px 12px rgba(239,68,68,0.2);">
+        <div id="adminDashboardView" style="display:none">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+                <h3 style="color:#fff;font-weight:700">
+                    <i class="fa-solid fa-table-list" style="color:var(--accent-red-glow)"></i> لوحة إدارة اللاعبين
+                </h3>
+                <button onclick="logoutAdmin()" style="padding:8px 18px;background:#ef4444;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:700">
                     <i class="fa-solid fa-power-off"></i> خروج
                 </button>
             </div>
-            
+
+            <!-- عداد الإحصائيات -->
+            <div class="stats-bar">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+                    <div class="stat-info">
+                        <div class="stat-num" id="totalCount">0</div>
+                        <div class="stat-label">إجمالي اللاعبين</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fa-solid fa-school"></i></div>
+                    <div class="stat-info">
+                        <div class="stat-num" id="schoolCount">0</div>
+                        <div class="stat-label">فئة مدارس</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fa-solid fa-child-reaching"></i></div>
+                    <div class="stat-info">
+                        <div class="stat-num" id="juniorCount">0</div>
+                        <div class="stat-label">فئة جونيور</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fa-solid fa-person"></i></div>
+                    <div class="stat-info">
+                        <div class="stat-num" id="seniorCount">0</div>
+                        <div class="stat-label">كادت + سينيور</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- بحث -->
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="ابحث باسم اللاعب أو الرقم القومي..." oninput="filterTable()">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </div>
+
             <div class="table-responsive">
                 <table class="premium-table">
                     <thead>
                         <tr>
                             <th>اللاعب</th>
                             <th>الرقم القومي</th>
-                            <th>الفئة الفنية</th>
+                            <th>الفئة</th>
                             <th>الحزام</th>
-                            <th>الاتصال</th>
+                            <th>الهاتف</th>
                             <th>ولي الأمر</th>
-                            <th>المستندات</th>
+                            <th>الشهادة</th>
+                            <th>الإجراءات</th>
                         </tr>
                     </thead>
                     <tbody id="playersTableBody"></tbody>
@@ -516,24 +583,22 @@
 </div>
 
 <script>
-    // بيانات الربط والـ Database الخاصة بك
     const SUPABASE_URL = "https://ffepbwqokmcettiexkyj.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZmZXBid3Fva21jZXR0aWV4a3lqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5ODk5NzAsImV4cCI6MjA5NTU2NTk3MH0.W2jsY5nBWmcahPpyoS0fxi822yki4ThJa7xWxABDXD4";
-    
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZmZXBid3Fva21jZXR0aWV4a3lqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg3OTc5MTQsImV4cCI6MjA2NDM3MzkxNH0.placeholder";
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let allPlayers = [];
 
     function changeMode(viewId) {
         document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.mode-btn').forEach(el => el.classList.remove('active'));
-        
         document.getElementById(viewId).classList.add('active');
-        
-        if(viewId === 'reg-view') {
+        if (viewId === 'reg-view') {
             document.getElementById('btn-tab-reg').classList.add('active');
             document.getElementById('dynamic-subtitle').innerText = "نظام التسجيل الذكي للأكاديمية واللاعبين";
         } else {
             document.getElementById('btn-tab-admin').classList.add('active');
-            document.getElementById('dynamic-subtitle').innerText = "لوحة المراقبة وإدارة شؤون اللاعبين الكباتن";
+            document.getElementById('dynamic-subtitle').innerText = "لوحة المراقبة وإدارة شؤون اللاعبين";
         }
     }
 
@@ -549,8 +614,7 @@
     function loginAdmin() {
         const user = document.getElementById('adminUser').value;
         const pass = document.getElementById('adminPass').value;
-
-        if(user === 'admin' && pass === '5555') {
+        if (user === 'admin' && pass === '5555') {
             document.getElementById('adminLoginView').style.display = 'none';
             document.getElementById('adminDashboardView').style.display = 'block';
             fetchPlayersData();
@@ -581,10 +645,8 @@
             alert("جاري رفع المستندات وحفظ طلب اللاعب... انتظر ثواني 🏆");
             const playerImgFile = document.getElementById('playerImg').files[0];
             const birthCertFile = document.getElementById('birthCertImg').files[0];
-            
             const playerImgUrl = await uploadFileToStorage('player-images', playerImgFile);
             const birthCertUrl = await uploadFileToStorage('birth-certificates', birthCertFile);
-
             const playerData = {
                 name: document.getElementById('playerName').value,
                 national_id: document.getElementById('nationalId').value,
@@ -598,26 +660,16 @@
                 player_image_url: playerImgUrl,
                 birth_certificate_url: birthCertUrl
             };
-
             const { error } = await supabaseClient.from('players').insert([playerData]);
             if (error) throw error;
-            
-            // سؤال ولي الأمر بذكاء بعد رفع البيانات بنجاح تماماً
-            const askAnother = confirm('تم إرسال طلب اللاعب بنجاح تام وحفظه في المنظومة! 🎉\n\nهل تريد تسجيل لاعب آخر؟');
-            
-            if (askAnother) {
-                // تصفير الفورم لتجهيزه للاعب التاني
-                document.getElementById('premiumForm').reset();
-                document.querySelectorAll('.file-upload-box p').forEach(p => {
-                    p.innerText = "اختر الملف المطلوب";
-                    p.style.color = 'var(--text-muted)';
-                });
-                document.querySelectorAll('.file-upload-box').forEach(b => b.style.borderColor = 'rgba(255, 255, 255, 0.15)');
-            } else {
-                alert('شكراً لك! تم إنهاء التسجيل بنجاح. بالتوفيق لأبطال الأكاديمية.');
-                document.getElementById('premiumForm').reset();
-            }
-            
+            const askAnother = confirm('تم إرسال طلب اللاعب بنجاح تام! 🎉\n\nهل تريد تسجيل لاعب آخر؟');
+            document.getElementById('premiumForm').reset();
+            document.querySelectorAll('.file-upload-box p').forEach(p => {
+                p.innerText = "اختر الملف المطلوب";
+                p.style.color = 'var(--text-muted)';
+            });
+            document.querySelectorAll('.file-upload-box').forEach(b => b.style.borderColor = 'rgba(255,255,255,0.15)');
+            if (!askAnother) alert('شكراً لك! تم إنهاء التسجيل بنجاح. بالتوفيق لأبطال الأكاديمية.');
         } catch (error) {
             alert('حدث خطأ أثناء الإرسال: ' + error.message);
         }
@@ -625,36 +677,117 @@
 
     async function fetchPlayersData() {
         const { data, error } = await supabaseClient.from('players').select('*').order('created_at', { ascending: false });
-        if (error) {
-            alert('خطأ في جلب البيانات: ' + error.message);
-            return;
-        }
+        if (error) { alert('خطأ في جلب البيانات: ' + error.message); return; }
+        allPlayers = data;
+        updateStats(data);
+        renderTable(data);
+    }
+
+    function updateStats(data) {
+        document.getElementById('totalCount').innerText = data.length;
+        document.getElementById('schoolCount').innerText = data.filter(p => p.category === 'مدارس').length;
+        document.getElementById('juniorCount').innerText = data.filter(p => p.category === 'جونيور').length;
+        document.getElementById('seniorCount').innerText = data.filter(p => p.category === 'كادت' || p.category === 'سينيور').length;
+    }
+
+    function renderTable(data) {
         const tbody = document.getElementById('playersTableBody');
         tbody.innerHTML = '';
-        
-        if(data.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:20px;">لا يوجد لاعبين مسجلين حالياً.</td></tr>`;
+        if (data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:30px">لا يوجد لاعبين مسجلين حالياً.</td></tr>`;
             return;
         }
-
         data.forEach(player => {
             tbody.innerHTML += `
                 <tr>
                     <td>
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <img src="${player.player_image_url}" class="img-preview-round" onerror="this.src='https://via.placeholder.com/150'">
-                            <span style="font-weight: 700;">${player.name}</span>
+                        <div style="display:flex;align-items:center;gap:10px">
+                            <img src="${player.player_image_url}" class="img-preview-round" onerror="this.src='https://via.placeholder.com/45'">
+                            <span style="font-weight:700">${player.name}</span>
                         </div>
                     </td>
                     <td>${player.national_id}</td>
                     <td><span class="player-badge">${player.category}</span></td>
-                    <td><span style="color: #ffffff; font-weight:600;">${player.belt_grade}</span></td>
+                    <td style="color:#fff;font-weight:600">${player.belt_grade}</td>
                     <td>${player.phone_1}</td>
                     <td>${player.parent_job}</td>
-                    <td><a href="${player.birth_certificate_url}" target="_blank" style="color: var(--accent-red-glow); font-weight:bold; text-decoration:none;"><i class="fa-solid fa-file-pdf"></i> الشهادة</a></td>
+                    <td><a href="${player.birth_certificate_url}" target="_blank" style="color:var(--accent-red-glow);font-weight:bold;text-decoration:none"><i class="fa-solid fa-file-image"></i> عرض</a></td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="btn-edit" onclick="openEditModal(${JSON.stringify(player).replace(/"/g, '&quot;')})">
+                                <i class="fa-solid fa-pen"></i> تعديل
+                            </button>
+                            <button class="btn-delete" onclick="deletePlayer('${player.id}', '${player.name}')">
+                                <i class="fa-solid fa-trash"></i> حذف
+                            </button>
+                        </div>
+                    </td>
                 </tr>`;
         });
     }
+
+    function filterTable() {
+        const q = document.getElementById('searchInput').value.toLowerCase();
+        const filtered = allPlayers.filter(p =>
+            p.name.toLowerCase().includes(q) ||
+            (p.national_id && p.national_id.includes(q))
+        );
+        renderTable(filtered);
+    }
+
+    // ===== تعديل =====
+    function openEditModal(player) {
+        document.getElementById('editPlayerId').value = player.id;
+        document.getElementById('editName').value = player.name || '';
+        document.getElementById('editNationalId').value = player.national_id || '';
+        document.getElementById('editBirthDate').value = player.birth_date || '';
+        document.getElementById('editAddress').value = player.address || '';
+        document.getElementById('editPhone1').value = player.phone_1 || '';
+        document.getElementById('editPhone2').value = player.phone_2 || '';
+        document.getElementById('editCategory').value = player.category || '';
+        document.getElementById('editBeltGrade').value = player.belt_grade || '';
+        document.getElementById('editParentJob').value = player.parent_job || '';
+        document.getElementById('editModal').classList.add('open');
+    }
+
+    function closeModal() {
+        document.getElementById('editModal').classList.remove('open');
+    }
+
+    async function saveEdit() {
+        const id = document.getElementById('editPlayerId').value;
+        const updatedData = {
+            name: document.getElementById('editName').value,
+            national_id: document.getElementById('editNationalId').value,
+            birth_date: document.getElementById('editBirthDate').value,
+            address: document.getElementById('editAddress').value,
+            phone_1: document.getElementById('editPhone1').value,
+            phone_2: document.getElementById('editPhone2').value,
+            category: document.getElementById('editCategory').value,
+            belt_grade: document.getElementById('editBeltGrade').value,
+            parent_job: document.getElementById('editParentJob').value,
+        };
+        const { error } = await supabaseClient.from('players').update(updatedData).eq('id', id);
+        if (error) { alert('خطأ في التعديل: ' + error.message); return; }
+        closeModal();
+        alert('✅ تم تعديل بيانات اللاعب بنجاح!');
+        fetchPlayersData();
+    }
+
+    // ===== حذف =====
+    async function deletePlayer(id, name) {
+        const confirm1 = confirm(`هل أنت متأكد من حذف اللاعب "${name}"؟\nهذا الإجراء لا يمكن التراجع عنه!`);
+        if (!confirm1) return;
+        const { error } = await supabaseClient.from('players').delete().eq('id', id);
+        if (error) { alert('خطأ في الحذف: ' + error.message); return; }
+        alert('✅ تم حذف اللاعب بنجاح!');
+        fetchPlayersData();
+    }
+
+    // إغلاق المودال بالضغط خارجه
+    document.getElementById('editModal').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+    });
 </script>
 </body>
 </html>
