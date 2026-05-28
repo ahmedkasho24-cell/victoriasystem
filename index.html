@@ -15,10 +15,10 @@
         :root {
             --bg-gradient: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
             --panel-bg: rgba(26, 26, 26, 0.75);
-            --accent-red: #dc2626;      /* الأحمر الأساسي للبراند */
-            --accent-red-glow: #ef4444; /* الأحمر المضيء للتأثيرات */
-            --text-main: #ffffff;        /* الأبيض الصافي للنصوص والعناوين */
-            --text-muted: #a3a3a3;      /* الرمادي للنصوص الفرعية */
+            --accent-red: #dc2626;      
+            --accent-red-glow: #ef4444; 
+            --text-main: #ffffff;        
+            --text-muted: #a3a3a3;      
             --border-color: rgba(255, 255, 255, 0.1);
         }
 
@@ -41,7 +41,6 @@
             position: relative;
         }
 
-        /* دوائر توهج حمراء خافتة في الخلفية */
         .blur-circle {
             position: absolute;
             width: 400px;
@@ -509,8 +508,7 @@
                             <th>المستندات</th>
                         </tr>
                     </thead>
-                    <tbody id="playersTableBody">
-                        </tbody>
+                    <tbody id="playersTableBody"></tbody>
                 </table>
             </div>
         </div>
@@ -522,7 +520,7 @@
     const SUPABASE_URL = "https://pcwznbtvtebrnoatmsyxy.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjd3puYnZ0ZWJybm9hdG1zeXh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5ODc0NDMsImV4cCI6MjA5NTU2MzQ0M30.Hx8y0F3ZXN0-VViKX7xzjRdat2aHU8N4cTs_R77BwyU";
     
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     function changeMode(viewId) {
         document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
@@ -571,9 +569,9 @@
     async function uploadFileToStorage(bucket, file) {
         const fileExt = file.name.split('.').pop();
         const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-        const { data, error } = await supabase.storage.from(bucket).upload(fileName, file);
+        const { data, error } = await supabaseClient.storage.from(bucket).upload(fileName, file);
         if (error) throw error;
-        const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(fileName);
+        const { data: urlData } = supabaseClient.storage.from(bucket).getPublicUrl(fileName);
         return urlData.publicUrl;
     }
 
@@ -601,24 +599,32 @@
                 birth_certificate_url: birthCertUrl
             };
 
-            const { error } = await supabase.from('players').insert([playerData]);
+            const { error } = await supabaseClient.from('players').insert([playerData]);
             if (error) throw error;
             
-            alert('تم إرسال طلب اللاعب بنجاح تام وحفظه في المنظومة! 🎉');
-            document.getElementById('premiumForm').reset();
+            // سؤال ولي الأمر بذكاء بعد رفع البيانات بنجاح تماماً
+            const askAnother = confirm('تم إرسال طلب اللاعب بنجاح تام وحفظه في المنظومة! 🎉\n\nهل تريد تسجيل لاعب آخر؟');
             
-            document.querySelectorAll('.file-upload-box p').forEach(p => {
-                p.innerText = "اختر الملف المطلوب";
-                p.style.color = 'var(--text-muted)';
-            });
-            document.querySelectorAll('.file-upload-box').forEach(b => b.style.borderColor = 'rgba(255, 255, 255, 0.15)');
+            if (askAnother) {
+                // تصفير الفورم لتجهيزه للاعب التاني
+                document.getElementById('premiumForm').reset();
+                document.querySelectorAll('.file-upload-box p').forEach(p => {
+                    p.innerText = "اختر الملف المطلوب";
+                    p.style.color = 'var(--text-muted)';
+                });
+                document.querySelectorAll('.file-upload-box').forEach(b => b.style.borderColor = 'rgba(255, 255, 255, 0.15)');
+            } else {
+                alert('شكراً لك! تم إنهاء التسجيل بنجاح. بالتوفيق لأبطال الأكاديمية.');
+                document.getElementById('premiumForm').reset();
+            }
+            
         } catch (error) {
             alert('حدث خطأ أثناء الإرسال: ' + error.message);
         }
     });
 
     async function fetchPlayersData() {
-        const { data, error } = await supabase.from('players').select('*').order('created_at', { ascending: false });
+        const { data, error } = await supabaseClient.from('players').select('*').order('created_at', { ascending: false });
         if (error) {
             alert('خطأ في جلب البيانات: ' + error.message);
             return;
