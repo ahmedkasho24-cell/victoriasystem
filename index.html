@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Victoria College Academy System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        /* نظام الألوان الفخم الجديد: أسود × أحمر × أبيض */
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            --panel-bg: rgba(26, 26, 26, 0.75);
+            --accent-red: #dc2626;      /* الأحمر الأساسي للبراند */
+            --accent-red-glow: #ef4444; /* الأحمر المضيء للتأثيرات */
+            --text-main: #ffffff;        /* الأبيض الصافي للنصوص والعناوين */
+            --text-muted: #a3a3a3;      /* الرمادي للنصوص الفرعية */
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* دوائر توهج حمراء خافتة في الخلفية */
+        .blur-circle {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(220, 38, 38, 0.12) 0%, transparent 70%);
+            top: -100px;
+            left: -100px;
+            z-index: -1;
+        }
+        .blur-circle-2 {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
+            bottom: -150px;
+            right: -150px;
+            z-index: -1;
+        }
+
+        .main-wrapper {
+            width: 100%;
+            max-width: 950px;
+            background: var(--panel-bg);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.9);
+            padding: 40px;
+            position: relative;
+            z-index: 10;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        header h1 {
+            font-size: 2.4rem;
+            font-weight: 900;
+            background: linear-gradient(to left, #ffffff, var(--accent-red-glow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        .nav-mode {
+            display: flex;
+            background: rgba(10, 10, 10, 0.8);
+            padding: 6px;
+            border-radius: 14px;
+            width: fit-content;
+            margin: 0 auto 35px auto;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .mode-btn {
+            background: none;
+            border: none;
+            padding: 10px 28px;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.4s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .mode-btn.active {
+            background: var(--accent-red);
+            color: #ffffff;
+            box-shadow: 0 4px 20px rgba(220, 38, 38, 0.5);
+        }
+
+        .view-section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-section-card {
+            background: rgba(10, 10, 10, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            padding: 25px;
+            border-radius: 16px;
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            color: #ffffff;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 2px solid var(--accent-red);
+            padding-bottom: 8px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        .field-group {
+            margin-bottom: 20px;
+        }
+
+        .field-group label {
+            display: block;
+            font-size: 0.9rem;
+            color: #e5e5e5;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            transition: 0.3s;
+        }
+
+        input[type="text"], input[type="date"], input[type="tel"], input[type="password"], select {
+            width: 100%;
+            padding: 14px 45px 14px 15px;
+            background: rgba(10, 10, 10, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: #ffffff;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--accent-red-glow);
+            box-shadow: 0 0 12px rgba(239, 68, 68, 0.3);
+        }
+
+        input:focus + i, select:focus + i {
+            color: var(--accent-red-glow);
+        }
+
+        .file-upload-box {
+            border: 2px dashed rgba(255, 255, 255, 0.15);
+            background: rgba(10, 10, 10, 0.5);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+            transition: 0.3s;
+        }
+
+        .file-upload-box:hover {
+            border-color: var(--accent-red-glow);
+            background: rgba(220, 38, 38, 0.03);
+        }
+
+        .file-upload-box input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .file-upload-box i {
+            font-size: 1.8rem;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+
+        .btn-premium {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--accent-red) 0%, #991b1b 100%);
+            border: none;
+            border-radius: 12px;
+            color: #ffffff;
+            font-size: 1.1rem;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(220, 38, 38, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: 0.3s;
+        }
+
+        .btn-premium:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(220, 38, 38, 0.45);
+            filter: brightness(1.15);
+        }
+
+        .admin-gate {
+            max-width: 420px;
+            margin: 40px auto;
+            background: rgba(10, 10, 10, 0.6);
+            padding: 30px;
+            border-radius: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            border-radius: 12px;
+            background: rgba(10, 10, 10, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .premium-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: right;
+            font-size: 0.9rem;
+        }
+
+        .premium-table th {
+            background: rgba(10, 10, 10, 0.9);
+            padding: 16px;
+            color: #ffffff;
+            border-bottom: 2px solid var(--accent-red);
+        }
+
+        .premium-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: #f3f3f3;
+        }
+
+        .player-badge {
+            background: rgba(220, 38, 38, 0.15);
+            color: var(--accent-red-glow);
+            border: 1px solid rgba(220, 38, 38, 0.3);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .img-preview-round {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--accent-red-glow);
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 { grid-template-columns: 1fr; gap: 10px; }
+            .main-wrapper { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="blur-circle"></div>
+<div class="blur-circle-2"></div>
+
+<div class="main-wrapper">
+    <header>
+        <h1>Victoria College Academy</h1>
+        <p id="dynamic-subtitle">نظام التسجيل الذكي للأكاديمية واللاعبين</p>
+    </header>
+
+    <div class="nav-mode">
+        <button id="btn-tab-reg" class="mode-btn active" onclick="changeMode('reg-view')">
+            <i class="fa-solid fa-user-plus"></i> تسجيل لاعب جديد
+        </button>
+        <button id="btn-tab-admin" class="mode-btn" onclick="changeMode('admin-view')">
+            <i class="fa-solid fa-lock"></i> بوابة الإدارة
+        </button>
+    </div>
+
+    <div id="reg-view" class="view-section active">
+        <form id="premiumForm">
+            <div class="form-section-card">
+                <div class="section-title"><i class="fa-solid fa-id-card"></i> البيانات الشخصية للاعب</div>
+                <div class="field-group">
+                    <label>الاسم الكامل للاعب:</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="playerName" placeholder="اكتب الاسم ثلاثي أو رباعي" required>
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                </div>
+                <div class="grid-2">
+                    <div class="field-group">
+                        <label>الرقم القومي (14 رقم):</label>
+                        <div class="input-wrapper">
+                            <input type="text" id="nationalId" pattern="\d{14}" placeholder="20000000000000" required>
+                            <i class="fa-solid fa-address-card"></i>
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label>تاريخ الميلاد:</label>
+                        <div class="input-wrapper">
+                            <input type="date" id="birthDate" required>
+                            <i class="fa-solid fa-calendar-days"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label>عنوان السكن بالتفصيل:</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="address" placeholder="المحافظة - الحي - الشارع" required>
+                        <i class="fa-solid fa-location-dot"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section-card">
+                <div class="section-title"><i class="fa-solid fa-medal"></i> التصنيف الفني وبيانات الاتصال</div>
+                <div class="grid-2">
+                    <div class="field-group">
+                        <label>رقم الهاتف الأساسي:</label>
+                        <div class="input-wrapper">
+                            <input type="tel" id="phone1" placeholder="01xxxxxxxxx" required>
+                            <i class="fa-solid fa-phone"></i>
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label>رقم هاتف إضافي:</label>
+                        <div class="input-wrapper">
+                            <input type="tel" id="phone2" placeholder="01xxxxxxxxx (اختياري)">
+                            <i class="fa-solid fa-mobile-screen"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid-2">
+                    <div class="field-group">
+                        <label>فئة اللاعب:</label>
+                        <div class="input-wrapper">
+                            <select id="category" required>
+                                <option value="" disabled selected>اختر الفئة الفنية...</option>
+                                <option value="مدارس">مدارس</option>
+                                <option value="جونيور">جونيور</option>
+                                <option value="كادت">كادت</option>
+                                <option value="سينيور">سينيور</option>
+                            </select>
+                            <i class="fa-solid fa-people-group"></i>
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label>درجة الحزام الحالية:</label>
+                        <div class="input-wrapper">
+                            <select id="beltGrade" required>
+                                <option value="" disabled selected>اختر درجة الحزام...</option>
+                                <option value="لم يختبر بعد">لم يختبر بعد</option>
+                                <option value="ابيض">أبيض</option>
+                                <option value="اصفر">أصفر</option>
+                                <option value="اورانج">أورانج</option>
+                                <option value="اخضر">أخضر</option>
+                                <option value="ازرق">أزرق</option>
+                            </select>
+                            <i class="fa-solid fa-graduation-cap"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label>تخصص عمل ولي الأمر:</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="parentJob" placeholder="الوظيفة / جهة العمل" required>
+                        <i class="fa-solid fa-briefcase"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section-card">
+                <div class="section-title"><i class="fa-solid fa-cloud-arrow-up"></i> المستندات المطلوبة</div>
+                <div class="grid-2">
+                    <div class="field-group">
+                        <label>صورة اللاعب الشخصية:</label>
+                        <div class="file-upload-box">
+                            <i class="fa-solid fa-image"></i>
+                            <p style="font-size: 0.85rem; color: var(--text-muted);">اختر صورة شخصية حديثة</p>
+                            <input type="file" id="playerImg" accept="image/*" required onchange="updateFileInfo(this)">
+                        </div>
+                    </div>
+                    <div class="file-group">
+                        <label>صورة شهادة ميلاد اللاعب:</label>
+                        <div class="file-upload-box">
+                            <i class="fa-solid fa-file-invoice"></i>
+                            <p style="font-size: 0.85rem; color: var(--text-muted);">اختر صورة شهادة الميلاد</p>
+                            <input type="file" id="birthCertImg" accept="image/*" required onchange="updateFileInfo(this)">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-premium">
+                <i class="fa-solid fa-circle-check"></i> ارسال الطلب
+            </button>
+        </form>
+    </div>
+
+    <div id="admin-view" class="view-section">
+        <div id="adminLoginView" class="admin-gate">
+            <h3 style="text-align: center; margin-bottom: 20px; color: #ffffff; border-bottom: 2px solid var(--accent-red); padding-bottom: 8px;">تسجيل دخول معتمد</h3>
+            <div class="field-group">
+                <label>اسم المستخدم:</label>
+                <div class="input-wrapper">
+                    <input type="text" id="adminUser" placeholder="Username">
+                    <i class="fa-solid fa-user-shield"></i>
+                </div>
+            </div>
+            <div class="field-group">
+                <label>كلمة المرور:</label>
+                <div class="input-wrapper">
+                    <input type="password" id="adminPass" placeholder="••••••••">
+                    <i class="fa-solid fa-key"></i>
+                </div>
+            </div>
+            <button type="button" class="btn-premium" onclick="loginAdmin()">
+                <i class="fa-solid fa-right-to-bracket"></i> دخول النظام
+            </button>
+        </div>
+
+        <div id="adminDashboardView" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                <h3 style="color: #ffffff; font-weight: 700;"><i class="fa-solid fa-table-list" style="color: var(--accent-red-glow);"></i> اللاعبين المعتمدين بالمنظومة</h3>
+                <button onclick="logoutAdmin()" style="padding: 8px 18px; background: #ef4444; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:700; box-shadow: 0 4px 12px rgba(239,68,68,0.2);">
+                    <i class="fa-solid fa-power-off"></i> خروج
+                </button>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="premium-table">
+                    <thead>
+                        <tr>
+                            <th>اللاعب</th>
+                            <th>الرقم القومي</th>
+                            <th>الفئة الفنية</th>
+                            <th>الحزام</th>
+                            <th>الاتصال</th>
+                            <th>ولي الأمر</th>
+                            <th>المستندات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="playersTableBody">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // بيانات الربط والـ Database الخاصة بك
+    const SUPABASE_URL = "https://pcwznbtvtebrnoatmsyxy.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjd3puYnZ0ZWJybm9hdG1zeXh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5ODc0NDMsImV4cCI6MjA5NTU2MzQ0M30.Hx8y0F3ZXN0-VViKX7xzjRdat2aHU8N4cTs_R77BwyU";
+    
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    function changeMode(viewId) {
+        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.mode-btn').forEach(el => el.classList.remove('active'));
+        
+        document.getElementById(viewId).classList.add('active');
+        
+        if(viewId === 'reg-view') {
+            document.getElementById('btn-tab-reg').classList.add('active');
+            document.getElementById('dynamic-subtitle').innerText = "نظام التسجيل الذكي للأكاديمية واللاعبين";
+        } else {
+            document.getElementById('btn-tab-admin').classList.add('active');
+            document.getElementById('dynamic-subtitle').innerText = "لوحة المراقبة وإدارة شؤون اللاعبين الكباتن";
+        }
+    }
+
+    function updateFileInfo(input) {
+        if (input.files && input.files[0]) {
+            const box = input.closest('.file-upload-box');
+            box.style.borderColor = 'var(--accent-red-glow)';
+            box.querySelector('p').innerText = "تم اختيار: " + input.files[0].name;
+            box.querySelector('p').style.color = 'var(--accent-red-glow)';
+        }
+    }
+
+    function loginAdmin() {
+        const user = document.getElementById('adminUser').value;
+        const pass = document.getElementById('adminPass').value;
+
+        if(user === 'admin' && pass === '5555') {
+            document.getElementById('adminLoginView').style.display = 'none';
+            document.getElementById('adminDashboardView').style.display = 'block';
+            fetchPlayersData();
+        } else {
+            alert('بيانات الدخول غير صحيحة يا كابتن!');
+        }
+    }
+
+    function logoutAdmin() {
+        document.getElementById('adminLoginView').style.display = 'block';
+        document.getElementById('adminDashboardView').style.display = 'none';
+        document.getElementById('adminUser').value = '';
+        document.getElementById('adminPass').value = '';
+    }
+
+    async function uploadFileToStorage(bucket, file) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const { data, error } = await supabase.storage.from(bucket).upload(fileName, file);
+        if (error) throw error;
+        const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(fileName);
+        return urlData.publicUrl;
+    }
+
+    document.getElementById('premiumForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        try {
+            alert("جاري رفع المستندات وحفظ طلب اللاعب... انتظر ثواني 🏆");
+            const playerImgFile = document.getElementById('playerImg').files[0];
+            const birthCertFile = document.getElementById('birthCertImg').files[0];
+            
+            const playerImgUrl = await uploadFileToStorage('player-images', playerImgFile);
+            const birthCertUrl = await uploadFileToStorage('birth-certificates', birthCertFile);
+
+            const playerData = {
+                name: document.getElementById('playerName').value,
+                national_id: document.getElementById('nationalId').value,
+                birth_date: document.getElementById('birthDate').value,
+                address: document.getElementById('address').value,
+                phone_1: document.getElementById('phone1').value,
+                phone_2: document.getElementById('phone2').value,
+                category: document.getElementById('category').value,
+                belt_grade: document.getElementById('beltGrade').value,
+                parent_job: document.getElementById('parentJob').value,
+                player_image_url: playerImgUrl,
+                birth_certificate_url: birthCertUrl
+            };
+
+            const { error } = await supabase.from('players').insert([playerData]);
+            if (error) throw error;
+            
+            alert('تم إرسال طلب اللاعب بنجاح تام وحفظه في المنظومة! 🎉');
+            document.getElementById('premiumForm').reset();
+            
+            document.querySelectorAll('.file-upload-box p').forEach(p => {
+                p.innerText = "اختر الملف المطلوب";
+                p.style.color = 'var(--text-muted)';
+            });
+            document.querySelectorAll('.file-upload-box').forEach(b => b.style.borderColor = 'rgba(255, 255, 255, 0.15)');
+        } catch (error) {
+            alert('حدث خطأ أثناء الإرسال: ' + error.message);
+        }
+    });
+
+    async function fetchPlayersData() {
+        const { data, error } = await supabase.from('players').select('*').order('created_at', { ascending: false });
+        if (error) {
+            alert('خطأ في جلب البيانات: ' + error.message);
+            return;
+        }
+        const tbody = document.getElementById('playersTableBody');
+        tbody.innerHTML = '';
+        
+        if(data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:20px;">لا يوجد لاعبين مسجلين حالياً.</td></tr>`;
+            return;
+        }
+
+        data.forEach(player => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <img src="${player.player_image_url}" class="img-preview-round" onerror="this.src='https://via.placeholder.com/150'">
+                            <span style="font-weight: 700;">${player.name}</span>
+                        </div>
+                    </td>
+                    <td>${player.national_id}</td>
+                    <td><span class="player-badge">${player.category}</span></td>
+                    <td><span style="color: #ffffff; font-weight:600;">${player.belt_grade}</span></td>
+                    <td>${player.phone_1}</td>
+                    <td>${player.parent_job}</td>
+                    <td><a href="${player.birth_certificate_url}" target="_blank" style="color: var(--accent-red-glow); font-weight:bold; text-decoration:none;"><i class="fa-solid fa-file-pdf"></i> الشهادة</a></td>
+                </tr>`;
+        });
+    }
+</script>
+</body>
+</html>
