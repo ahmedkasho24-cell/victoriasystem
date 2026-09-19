@@ -791,9 +791,11 @@
         document.getElementById('adminPass').value = '';
     }
 
-    // يضغط الصورة لو حجمها كبير أو أبعادها كبيرة، عشان يسرّع الرفع
+    // يضغط الصورة لو حجمها كبير أو أبعادها كبيرة، عشان يسرّع الرفع.
+    // لو المتصفح مش قادر يفك تشفير الصورة (زي صيغة HEIC/HEIF من آيفون وبعض أجهزة أندرويد)
+    // بيرفع الملف الأصلي زي ما هو بدل ما يفشل بالكامل.
     function compressImage(file, maxDimension = 1280, quality = 0.75) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             if (!file.type.startsWith('image/') || file.type === 'image/gif') {
                 resolve(file);
                 return;
@@ -801,30 +803,36 @@
             const img = new Image();
             const reader = new FileReader();
             reader.onload = (e) => { img.src = e.target.result; };
-            reader.onerror = reject;
+            reader.onerror = () => resolve(file);
             img.onload = () => {
-                let { width, height } = img;
-                if (width > maxDimension || height > maxDimension) {
-                    if (width > height) {
-                        height = Math.round(height * (maxDimension / width));
-                        width = maxDimension;
-                    } else {
-                        width = Math.round(width * (maxDimension / height));
-                        height = maxDimension;
+                try {
+                    let { width, height } = img;
+                    if (width > maxDimension || height > maxDimension) {
+                        if (width > height) {
+                            height = Math.round(height * (maxDimension / width));
+                            width = maxDimension;
+                        } else {
+                            width = Math.round(width * (maxDimension / height));
+                            height = maxDimension;
+                        }
                     }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                    canvas.toBlob((blob) => {
+                        if (!blob) { resolve(file); return; }
+                        const compressedFile = new File([blob], file.name, { type: 'image/jpeg' });
+                        // لو الملف المضغوط أكبر غريب من الأصلي (نادر) استخدم الأصلي
+                        resolve(compressedFile.size < file.size ? compressedFile : file);
+                    }, 'image/jpeg', quality);
+                } catch (err) {
+                    // أي فشل غير متوقع أثناء الرسم على الـ canvas: ارفع الملف الأصلي
+                    resolve(file);
                 }
-                const canvas = document.createElement('canvas');
-                canvas.width = width;
-                canvas.height = height;
-                canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-                canvas.toBlob((blob) => {
-                    if (!blob) { resolve(file); return; }
-                    const compressedFile = new File([blob], file.name, { type: 'image/jpeg' });
-                    // لو الملف المضغوط أكبر غريب من الأصلي (نادر) استخدم الأصلي
-                    resolve(compressedFile.size < file.size ? compressedFile : file);
-                }, 'image/jpeg', quality);
             };
-            img.onerror = reject;
+            // المتصفح مش قادر يعرض الصورة دي (غالبًا صيغة HEIC/HEIF غير مدعومة) — ارفع الأصلي زي ما هو
+            img.onerror = () => resolve(file);
             reader.readAsDataURL(file);
         });
     }
@@ -894,7 +902,11 @@
             document.querySelectorAll('.file-upload-box').forEach(b => b.style.borderColor = 'var(--line-black)');
             changeMode('landing-view');
         } catch (error) {
-            alert('حدث خطأ أثناء الإرسال: ' + error.message);
+            console.error('خطأ في إرسال التسجيل:', error);
+            const msg = (error && (error.message || error.error_description || error.hint))
+                || (typeof error === 'string' ? error : null)
+                || 'خطأ غير معروف، افتح Console في المتصفح عشان تفاصيل أكتر';
+            alert('حدث خطأ أثناء الإرسال: ' + msg);
         } finally {
             setSubmitLoading(false);
         }
