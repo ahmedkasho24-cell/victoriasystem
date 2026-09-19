@@ -9,16 +9,20 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
     <style>
         :root {
-            --bg-gradient: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
-            --panel-bg: rgba(26, 26, 26, 0.75);
-            --accent-red: #dc2626;
-            --accent-red-glow: #ef4444;
-            --text-main: #ffffff;
-            --text-muted: #a3a3a3;
-            --border-color: rgba(255, 255, 255, 0.1);
+            --bg-gradient: linear-gradient(135deg, #ffffff 0%, #eaf8ec 100%);
+            --panel-bg: rgba(255, 255, 255, 0.92);
+            --accent-green: #16a34a;
+            --accent-green-glow: #22c55e;
+            --text-main: #17201a;
+            --text-muted: #5c6b60;
+            --border-color: rgba(0, 0, 0, 0.14);
+            --line-black: rgba(0, 0, 0, 0.55);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
@@ -37,12 +41,12 @@
 
         .blur-circle {
             position: absolute; width: 400px; height: 400px;
-            background: radial-gradient(circle, rgba(220,38,38,0.12) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(22,163,74,0.10) 0%, transparent 70%);
             top: -100px; left: -100px; z-index: -1;
         }
         .blur-circle-2 {
             position: absolute; width: 500px; height: 500px;
-            background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(22,163,74,0.08) 0%, transparent 70%);
             bottom: -150px; right: -150px; z-index: -1;
         }
 
@@ -53,7 +57,7 @@
             -webkit-backdrop-filter: blur(25px);
             border: 1px solid var(--border-color);
             border-radius: 24px;
-            box-shadow: 0 25px 60px -15px rgba(0,0,0,0.9);
+            box-shadow: 0 25px 60px -15px rgba(0,0,0,0.12);
             padding: 40px;
             position: relative; z-index: 10;
         }
@@ -61,17 +65,17 @@
         header { text-align: center; margin-bottom: 40px; }
         header h1 {
             font-size: 2.4rem; font-weight: 900;
-            background: linear-gradient(to left, #ffffff, var(--accent-red-glow));
+            background: linear-gradient(to left, #14532d, var(--accent-green-glow));
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;
         }
         header p { color: var(--text-muted); font-size: 1rem; }
 
         .nav-mode {
-            display: flex; background: rgba(10,10,10,0.8);
+            display: flex; background: rgba(0,0,0,0.03);
             padding: 6px; border-radius: 14px;
             width: fit-content; margin: 0 auto 35px auto;
-            border: 1px solid rgba(255,255,255,0.05);
+            border: 1px solid var(--border-color);
         }
         .mode-btn {
             background: none; border: none; padding: 10px 28px;
@@ -80,8 +84,8 @@
             display: flex; align-items: center; gap: 8px;
         }
         .mode-btn.active {
-            background: var(--accent-red); color: #ffffff;
-            box-shadow: 0 4px 20px rgba(220,38,38,0.5);
+            background: var(--accent-green); color: #ffffff;
+            box-shadow: 0 4px 20px rgba(22,163,74,0.35);
         }
 
         .view-section { display: none; animation: fadeIn 0.5s ease; }
@@ -92,61 +96,100 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        .btn-back {
+            background: none; border: 1px solid var(--border-color);
+            color: var(--text-main); padding: 8px 18px; border-radius: 10px;
+            cursor: pointer; font-weight: 700; font-size: 0.9rem;
+            margin-bottom: 20px; display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-back:hover { background: rgba(0,0,0,0.04); }
+
+        /* ===== صفحة الرئيسية ===== */
+        .landing-cards {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 25px;
+        }
+        .landing-card {
+            background: rgba(255,255,255,0.7);
+            border: 1px solid var(--line-black);
+            border-radius: 18px; padding: 35px 20px; text-align: center;
+            cursor: pointer; transition: 0.3s;
+        }
+        .landing-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 30px rgba(22,163,74,0.18);
+            border-color: var(--accent-green);
+        }
+        .landing-card i { font-size: 2.4rem; color: var(--accent-green); margin-bottom: 14px; }
+        .landing-card h3 { font-size: 1.2rem; margin-bottom: 8px; color: var(--text-main); }
+        .landing-card p { color: var(--text-muted); font-size: 0.9rem; }
+
+        .btn-admin-link {
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            width: 100%; padding: 14px;
+            background: none; border: 1px dashed var(--line-black);
+            border-radius: 12px; color: var(--text-muted);
+            font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: 0.3s;
+        }
+        .btn-admin-link:hover { color: var(--accent-green); border-color: var(--accent-green); }
+
         .form-section-card {
-            background: rgba(10,10,10,0.4);
-            border: 1px solid rgba(255,255,255,0.03);
+            background: rgba(0,0,0,0.015);
+            border: 1px solid var(--border-color);
             padding: 25px; border-radius: 16px; margin-bottom: 25px;
         }
         .section-title {
-            font-size: 1.1rem; color: #ffffff; margin-bottom: 20px;
+            font-size: 1.1rem; color: var(--text-main); margin-bottom: 20px;
             display: flex; align-items: center; gap: 10px;
-            border-bottom: 2px solid var(--accent-red); padding-bottom: 8px;
+            border-bottom: 2px solid var(--line-black); padding-bottom: 8px;
         }
+        .section-title i { color: var(--accent-green); }
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 25px; }
         .field-group { margin-bottom: 20px; }
-        .field-group label { display: block; font-size: 0.9rem; color: #e5e5e5; margin-bottom: 8px; font-weight: 600; }
+        .field-group label { display: block; font-size: 0.9rem; color: #333; margin-bottom: 8px; font-weight: 600; }
 
         .input-wrapper { position: relative; }
         .input-wrapper i { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); transition: 0.3s; }
 
-        input[type="text"], input[type="date"], input[type="tel"], input[type="password"], select {
+        input[type="text"], input[type="date"], input[type="tel"], input[type="password"], input[type="number"], select, textarea {
             width: 100%; padding: 14px 45px 14px 15px;
-            background: rgba(10,10,10,0.85);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 10px; color: #ffffff; font-size: 0.95rem;
+            background: #ffffff;
+            border: 1px solid var(--line-black);
+            border-radius: 10px; color: var(--text-main); font-size: 0.95rem;
             outline: none; transition: all 0.3s ease;
         }
-        input:focus, select:focus {
-            border-color: var(--accent-red-glow);
-            box-shadow: 0 0 12px rgba(239,68,68,0.3);
+        textarea { padding: 14px 15px; min-height: 90px; resize: vertical; }
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--accent-green-glow);
+            box-shadow: 0 0 12px rgba(34,197,94,0.25);
         }
 
         .file-upload-box {
-            border: 2px dashed rgba(255,255,255,0.15);
-            background: rgba(10,10,10,0.5);
+            border: 2px dashed var(--line-black);
+            background: rgba(0,0,0,0.015);
             border-radius: 12px; padding: 20px;
             text-align: center; cursor: pointer;
             position: relative; transition: 0.3s;
         }
-        .file-upload-box:hover { border-color: var(--accent-red-glow); background: rgba(220,38,38,0.03); }
+        .file-upload-box:hover { border-color: var(--accent-green-glow); background: rgba(22,163,74,0.03); }
         .file-upload-box input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
         .file-upload-box i { font-size: 1.8rem; color: var(--text-muted); margin-bottom: 10px; }
 
         .btn-premium {
             width: 100%; padding: 16px;
-            background: linear-gradient(135deg, var(--accent-red) 0%, #991b1b 100%);
+            background: linear-gradient(135deg, var(--accent-green) 0%, #15803d 100%);
             border: none; border-radius: 12px; color: #ffffff;
             font-size: 1.1rem; font-weight: 800; cursor: pointer;
-            box-shadow: 0 10px 25px rgba(220,38,38,0.3);
+            box-shadow: 0 10px 25px rgba(22,163,74,0.25);
             display: flex; align-items: center; justify-content: center;
             gap: 10px; transition: 0.3s;
         }
-        .btn-premium:hover { transform: translateY(-2px); box-shadow: 0 15px 30px rgba(220,38,38,0.45); filter: brightness(1.15); }
+        .btn-premium:hover { transform: translateY(-2px); box-shadow: 0 15px 30px rgba(22,163,74,0.4); filter: brightness(1.1); }
 
         .admin-gate {
             max-width: 420px; margin: 40px auto;
-            background: rgba(10,10,10,0.6); padding: 30px;
-            border-radius: 18px; border: 1px solid rgba(255,255,255,0.05);
+            background: rgba(0,0,0,0.015); padding: 30px;
+            border-radius: 18px; border: 1px solid var(--border-color);
         }
 
         /* ===== عداد اللاعبين ===== */
@@ -154,117 +197,138 @@
             display: flex; gap: 16px; margin-bottom: 25px; flex-wrap: wrap;
         }
         .stat-card {
-            background: rgba(10,10,10,0.6);
-            border: 1px solid rgba(220,38,38,0.2);
+            background: rgba(0,0,0,0.015);
+            border: 1px solid var(--line-black);
             border-radius: 14px; padding: 16px 24px;
             display: flex; align-items: center; gap: 14px;
             flex: 1; min-width: 160px;
         }
         .stat-icon {
             width: 48px; height: 48px; border-radius: 12px;
-            background: rgba(220,38,38,0.15);
+            background: rgba(22,163,74,0.12);
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.3rem; color: var(--accent-red-glow);
+            font-size: 1.3rem; color: var(--accent-green);
         }
         .stat-info .stat-num {
-            font-size: 2rem; font-weight: 900; color: #ffffff;
+            font-size: 2rem; font-weight: 900; color: var(--text-main);
             line-height: 1;
         }
         .stat-info .stat-label { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
 
+        /* ===== ازرار التصدير ===== */
+        .export-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .btn-export {
+            padding: 10px 18px; border-radius: 10px; border: 1px solid var(--line-black);
+            background: #ffffff; color: var(--text-main); font-weight: 700; cursor: pointer;
+            display: flex; align-items: center; gap: 8px; font-size: 0.88rem; transition: 0.2s;
+        }
+        .btn-export:hover { border-color: var(--accent-green); color: var(--accent-green); }
+
         /* ===== جدول اللاعبين ===== */
         .table-responsive {
             overflow-x: auto; border-radius: 12px;
-            background: rgba(10,10,10,0.5);
-            border: 1px solid rgba(255,255,255,0.08);
+            background: #ffffff;
+            border: 1px solid var(--line-black);
         }
         .premium-table { width: 100%; border-collapse: collapse; text-align: right; font-size: 0.88rem; }
         .premium-table th {
-            background: rgba(10,10,10,0.9); padding: 14px 12px;
-            color: #ffffff; border-bottom: 2px solid var(--accent-red);
+            background: rgba(0,0,0,0.02); padding: 14px 12px;
+            color: var(--text-main); border-bottom: 2px solid var(--line-black);
             white-space: nowrap;
         }
         .premium-table td {
-            padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05);
-            color: #f3f3f3; vertical-align: middle;
+            padding: 12px; border-bottom: 1px solid var(--border-color);
+            color: #222; vertical-align: middle;
         }
-        .premium-table tr:hover td { background: rgba(220,38,38,0.04); }
+        .premium-table tr:hover td { background: rgba(22,163,74,0.04); }
 
         .player-badge {
-            background: rgba(220,38,38,0.15); color: var(--accent-red-glow);
-            border: 1px solid rgba(220,38,38,0.3);
+            background: rgba(22,163,74,0.12); color: #15803d;
+            border: 1px solid rgba(22,163,74,0.3);
             padding: 3px 8px; border-radius: 6px; font-size: 0.78rem; font-weight: bold;
         }
         .img-preview-round {
             width: 42px; height: 42px; border-radius: 50%;
-            object-fit: cover; border: 2px solid var(--accent-red-glow);
+            object-fit: cover; border: 2px solid var(--accent-green-glow);
         }
 
         /* ===== أزرار الإجراءات ===== */
-        .action-btns { display: flex; gap: 6px; }
-        .btn-edit, .btn-delete {
+        .action-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+        .btn-edit, .btn-delete, .btn-view {
             border: none; border-radius: 8px; cursor: pointer;
             padding: 7px 12px; font-size: 0.82rem; font-weight: 700;
             display: flex; align-items: center; gap: 5px; transition: 0.2s;
         }
+        .btn-view {
+            background: rgba(22,163,74,0.12); color: #15803d;
+            border: 1px solid rgba(22,163,74,0.3);
+        }
+        .btn-view:hover { background: rgba(22,163,74,0.25); }
         .btn-edit {
-            background: rgba(59,130,246,0.15); color: #60a5fa;
+            background: rgba(59,130,246,0.12); color: #2563eb;
             border: 1px solid rgba(59,130,246,0.3);
         }
-        .btn-edit:hover { background: rgba(59,130,246,0.3); }
+        .btn-edit:hover { background: rgba(59,130,246,0.25); }
         .btn-delete {
-            background: rgba(220,38,38,0.15); color: #f87171;
+            background: rgba(220,38,38,0.12); color: #dc2626;
             border: 1px solid rgba(220,38,38,0.3);
         }
-        .btn-delete:hover { background: rgba(220,38,38,0.35); }
+        .btn-delete:hover { background: rgba(220,38,38,0.25); }
 
-        /* ===== مودال التعديل ===== */
+        /* ===== مودال (تعديل / عرض) ===== */
         .modal-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+            position: fixed; inset: 0; background: rgba(0,0,0,0.45);
             backdrop-filter: blur(6px); z-index: 1000;
             display: none; align-items: center; justify-content: center; padding: 20px;
         }
         .modal-overlay.open { display: flex; }
         .modal-box {
-            background: #1a1a1a; border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 20px; padding: 30px; width: 100%; max-width: 600px;
+            background: #ffffff; border: 1px solid var(--line-black);
+            border-radius: 20px; padding: 30px; width: 100%; max-width: 640px;
             max-height: 90vh; overflow-y: auto;
-            box-shadow: 0 30px 80px rgba(0,0,0,0.9);
+            box-shadow: 0 30px 80px rgba(0,0,0,0.25);
             animation: fadeIn 0.3s ease;
         }
         .modal-title {
-            font-size: 1.2rem; font-weight: 800; color: #fff;
-            border-bottom: 2px solid var(--accent-red); padding-bottom: 10px; margin-bottom: 20px;
+            font-size: 1.2rem; font-weight: 800; color: var(--text-main);
+            border-bottom: 2px solid var(--line-black); padding-bottom: 10px; margin-bottom: 20px;
             display: flex; align-items: center; gap: 10px;
         }
+        .modal-title i { color: var(--accent-green); }
         .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .modal-field label { font-size: 0.85rem; color: #ccc; margin-bottom: 6px; display: block; font-weight: 600; }
-        .modal-field input, .modal-field select {
+        .modal-field label { font-size: 0.85rem; color: #333; margin-bottom: 6px; display: block; font-weight: 600; }
+        .modal-field input, .modal-field select, .modal-field textarea {
             width: 100%; padding: 11px 14px;
-            background: rgba(10,10,10,0.9);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 9px; color: #fff; font-size: 0.9rem; outline: none;
+            background: #ffffff;
+            border: 1px solid var(--line-black);
+            border-radius: 9px; color: var(--text-main); font-size: 0.9rem; outline: none;
         }
-        .modal-field input:focus, .modal-field select:focus {
-            border-color: var(--accent-red-glow);
-            box-shadow: 0 0 10px rgba(239,68,68,0.25);
+        .modal-field input:focus, .modal-field select:focus, .modal-field textarea:focus {
+            border-color: var(--accent-green-glow);
+            box-shadow: 0 0 10px rgba(34,197,94,0.2);
         }
         .modal-actions { display: flex; gap: 12px; margin-top: 20px; }
         .btn-save {
             flex: 1; padding: 13px;
-            background: linear-gradient(135deg, var(--accent-red), #991b1b);
+            background: linear-gradient(135deg, var(--accent-green), #15803d);
             border: none; border-radius: 10px; color: #fff;
             font-size: 1rem; font-weight: 800; cursor: pointer; transition: 0.3s;
         }
-        .btn-save:hover { filter: brightness(1.15); }
+        .btn-save:hover { filter: brightness(1.1); }
         .btn-cancel {
             flex: 1; padding: 13px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 10px; color: #ccc;
+            background: rgba(0,0,0,0.03);
+            border: 1px solid var(--line-black);
+            border-radius: 10px; color: var(--text-main);
             font-size: 1rem; font-weight: 700; cursor: pointer; transition: 0.3s;
         }
-        .btn-cancel:hover { background: rgba(255,255,255,0.1); }
+        .btn-cancel:hover { background: rgba(0,0,0,0.06); }
+
+        .profile-view-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; margin-bottom: 15px; }
+        .profile-view-item { padding: 8px 0; border-bottom: 1px dashed var(--border-color); }
+        .profile-view-item span.pv-label { display: block; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 3px; }
+        .profile-view-item span.pv-value { font-weight: 700; color: var(--text-main); }
+        .profile-photo { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent-green-glow); margin-bottom: 15px; }
 
         /* ===== بحث ===== */
         .search-bar {
@@ -272,15 +336,21 @@
         }
         .search-bar input {
             width: 100%; padding: 12px 45px 12px 15px;
-            background: rgba(10,10,10,0.7);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 10px; color: #fff; font-size: 0.95rem; outline: none;
+            background: #ffffff;
+            border: 1px solid var(--line-black);
+            border-radius: 10px; color: var(--text-main); font-size: 0.95rem; outline: none;
         }
-        .search-bar input:focus { border-color: var(--accent-red-glow); }
+        .search-bar input:focus { border-color: var(--accent-green-glow); }
         .search-bar i { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
 
+        footer.site-footer {
+            text-align: center; margin-top: 35px; padding-top: 18px;
+            border-top: 1px solid var(--line-black);
+            color: var(--text-muted); font-size: 0.85rem;
+        }
+
         @media (max-width: 768px) {
-            .grid-2, .modal-grid { grid-template-columns: 1fr; gap: 10px; }
+            .grid-2, .modal-grid, .grid-3, .landing-cards, .profile-view-grid { grid-template-columns: 1fr; gap: 10px; }
             .main-wrapper { padding: 20px; }
             .stats-bar { gap: 10px; }
         }
@@ -294,7 +364,7 @@
 <!-- مودال التعديل -->
 <div class="modal-overlay" id="editModal">
     <div class="modal-box">
-        <div class="modal-title"><i class="fa-solid fa-pen-to-square" style="color:var(--accent-red-glow)"></i> تعديل بيانات اللاعب</div>
+        <div class="modal-title"><i class="fa-solid fa-pen-to-square"></i> تعديل بيانات اللاعب</div>
         <input type="hidden" id="editPlayerId">
         <div class="modal-grid">
             <div class="modal-field" style="grid-column: span 2;">
@@ -322,11 +392,12 @@
                 <input type="tel" id="editPhone2" placeholder="اختياري">
             </div>
             <div class="modal-field">
-                <label>الفئة الفنية</label>
+                <label>الفئة العمرية</label>
                 <select id="editCategory">
-                    <option value="مدارس">مدارس</option>
+                    <option value="براعم">براعم (٦ سنوات فأقل)</option>
+                    <option value="ناشئين">ناشئين (٩ سنوات فأقل)</option>
+                    <option value="كادت">كادت (١٢ عام فأقل)</option>
                     <option value="جونيور">جونيور</option>
-                    <option value="كادت">كادت</option>
                     <option value="سينيور">سينيور</option>
                 </select>
             </div>
@@ -335,22 +406,54 @@
                 <select id="editBeltGrade">
                     <option value="لم يختبر بعد">لم يختبر بعد</option>
                     <option value="ابيض">أبيض</option>
-                    <option value="اصفر">أصفر</option>
-                    <option value="اورانج">أورانج</option>
+                    <option value="اصفر 1">أصفر 1</option>
+                    <option value="اصفر 2">أصفر 2</option>
+                    <option value="برتقالي 1">برتقالي 1</option>
+                    <option value="برتقالي 2">برتقالي 2</option>
                     <option value="اخضر">أخضر</option>
-                    <option value="ازرق">أزرق</option>
+                    <option value="ازرق 1">أزرق 1</option>
+                    <option value="ازرق 2">أزرق 2</option>
+                    <option value="ازرق 3">أزرق 3</option>
+                    <option value="ازرق 4">أزرق 4</option>
+                    <option value="ازرق 5">أزرق 5</option>
+                    <option value="ازرق 6">أزرق 6</option>
+                    <option value="احمر 3">أحمر 3</option>
+                    <option value="احمر 2">أحمر 2</option>
+                    <option value="احمر 1">أحمر 1</option>
+                    <option value="اسود">أسود</option>
                 </select>
+            </div>
+            <div class="modal-field">
+                <label>الوزن (كجم)</label>
+                <input type="number" id="editWeight" placeholder="مثال: 32">
+            </div>
+            <div class="modal-field">
+                <label>الطول (سم)</label>
+                <input type="number" id="editHeight" placeholder="مثال: 135">
             </div>
             <div class="modal-field" style="grid-column: span 2;">
                 <label>تخصص ولي الأمر</label>
                 <input type="text" id="editParentJob" placeholder="الوظيفة / جهة العمل">
             </div>
+            <div class="modal-field" style="grid-column: span 2;">
+                <label>أمراض يعاني منها اللاعب (إن وجدت)</label>
+                <textarea id="editDiseases" placeholder="اكتب لا يوجد في حالة عدم وجود أمراض"></textarea>
+            </div>
+            <div class="modal-field" style="grid-column: span 2;">
+                <label>بطولات / إنجازات اللاعب</label>
+                <textarea id="editAchievements" placeholder="اكتب أي بطولات أو إنجازات سابقة"></textarea>
+            </div>
         </div>
         <div class="modal-actions">
             <button class="btn-save" onclick="saveEdit()"><i class="fa-solid fa-floppy-disk"></i> حفظ التعديلات</button>
-            <button class="btn-cancel" onclick="closeModal()"><i class="fa-solid fa-xmark"></i> إلغاء</button>
+            <button class="btn-cancel" onclick="closeModal('editModal')"><i class="fa-solid fa-xmark"></i> إلغاء</button>
         </div>
     </div>
+</div>
+
+<!-- مودال عرض ملف اللاعب -->
+<div class="modal-overlay" id="profileModal">
+    <div class="modal-box" id="profileModalContent"></div>
 </div>
 
 <div class="main-wrapper">
@@ -359,17 +462,45 @@
         <p id="dynamic-subtitle">نظام التسجيل الذكي للأكاديمية واللاعبين</p>
     </header>
 
-    <div class="nav-mode">
-        <button id="btn-tab-reg" class="mode-btn active" onclick="changeMode('reg-view')">
-            <i class="fa-solid fa-user-plus"></i> تسجيل لاعب جديد
-        </button>
-        <button id="btn-tab-admin" class="mode-btn" onclick="changeMode('admin-view')">
-            <i class="fa-solid fa-lock"></i> بوابة الإدارة
+    <!-- الرئيسية -->
+    <div id="landing-view" class="view-section active">
+        <div class="landing-cards">
+            <div class="landing-card" onclick="changeMode('check-view')">
+                <i class="fa-solid fa-magnifying-glass-arrow-right"></i>
+                <h3>تحقق من تسجيلك</h3>
+                <p>لو أنت مسجل قبل كده هتقدر تعدل بياناتك أو تمسحها وتسجل من جديد</p>
+            </div>
+            <div class="landing-card" onclick="changeMode('reg-view')">
+                <i class="fa-solid fa-user-plus"></i>
+                <h3>تسجيل لاعب جديد</h3>
+                <p>سجل بياناتك للانضمام لأكاديمية Victoria College</p>
+            </div>
+        </div>
+        <button class="btn-admin-link" onclick="changeMode('admin-view')">
+            <i class="fa-solid fa-lock"></i> دخول كأداري
         </button>
     </div>
 
+    <!-- تحقق من التسجيل -->
+    <div id="check-view" class="view-section">
+        <button class="btn-back" onclick="changeMode('landing-view')"><i class="fa-solid fa-arrow-right"></i> رجوع للرئيسية</button>
+        <div class="form-section-card" style="max-width:500px;margin:0 auto">
+            <div class="section-title"><i class="fa-solid fa-phone"></i> تحقق من تسجيلك برقم هاتفك</div>
+            <div class="field-group">
+                <label>رقم الهاتف المسجل به:</label>
+                <div class="input-wrapper">
+                    <input type="tel" id="checkPhone" placeholder="01xxxxxxxxx">
+                    <i class="fa-solid fa-phone"></i>
+                </div>
+            </div>
+            <button class="btn-premium" onclick="checkRegistration()"><i class="fa-solid fa-magnifying-glass"></i> تحقق الآن</button>
+        </div>
+        <div id="checkResultBox" style="display:none;margin-top:25px"></div>
+    </div>
+
     <!-- قسم التسجيل -->
-    <div id="reg-view" class="view-section active">
+    <div id="reg-view" class="view-section">
+        <button class="btn-back" onclick="changeMode('landing-view')"><i class="fa-solid fa-arrow-right"></i> رجوع للرئيسية</button>
         <form id="premiumForm">
             <div class="form-section-card">
                 <div class="section-title"><i class="fa-solid fa-id-card"></i> البيانات الشخصية للاعب</div>
@@ -425,13 +556,14 @@
                 </div>
                 <div class="grid-2">
                     <div class="field-group">
-                        <label>فئة اللاعب:</label>
+                        <label>الفئة العمرية:</label>
                         <div class="input-wrapper">
                             <select id="category" required>
-                                <option value="" disabled selected>اختر الفئة الفنية...</option>
-                                <option value="مدارس">مدارس</option>
+                                <option value="" disabled selected>اختر الفئة العمرية...</option>
+                                <option value="براعم">براعم (٦ سنوات فأقل)</option>
+                                <option value="ناشئين">ناشئين (٩ سنوات فأقل)</option>
+                                <option value="كادت">كادت (١٢ عام فأقل)</option>
                                 <option value="جونيور">جونيور</option>
-                                <option value="كادت">كادت</option>
                                 <option value="سينيور">سينيور</option>
                             </select>
                             <i class="fa-solid fa-people-group"></i>
@@ -444,10 +576,21 @@
                                 <option value="" disabled selected>اختر درجة الحزام...</option>
                                 <option value="لم يختبر بعد">لم يختبر بعد</option>
                                 <option value="ابيض">أبيض</option>
-                                <option value="اصفر">أصفر</option>
-                                <option value="اورانج">أورانج</option>
+                                <option value="اصفر 1">أصفر 1</option>
+                                <option value="اصفر 2">أصفر 2</option>
+                                <option value="برتقالي 1">برتقالي 1</option>
+                                <option value="برتقالي 2">برتقالي 2</option>
                                 <option value="اخضر">أخضر</option>
-                                <option value="ازرق">أزرق</option>
+                                <option value="ازرق 1">أزرق 1</option>
+                                <option value="ازرق 2">أزرق 2</option>
+                                <option value="ازرق 3">أزرق 3</option>
+                                <option value="ازرق 4">أزرق 4</option>
+                                <option value="ازرق 5">أزرق 5</option>
+                                <option value="ازرق 6">أزرق 6</option>
+                                <option value="احمر 3">أحمر 3</option>
+                                <option value="احمر 2">أحمر 2</option>
+                                <option value="احمر 1">أحمر 1</option>
+                                <option value="اسود">أسود</option>
                             </select>
                             <i class="fa-solid fa-graduation-cap"></i>
                         </div>
@@ -459,6 +602,34 @@
                         <input type="text" id="parentJob" placeholder="الوظيفة / جهة العمل" required>
                         <i class="fa-solid fa-briefcase"></i>
                     </div>
+                </div>
+            </div>
+
+            <div class="form-section-card">
+                <div class="section-title"><i class="fa-solid fa-weight-scale"></i> البيانات البدنية</div>
+                <div class="grid-3">
+                    <div class="field-group">
+                        <label>الوزن (كجم):</label>
+                        <div class="input-wrapper">
+                            <input type="number" step="0.1" id="weight" placeholder="مثال: 32" required>
+                            <i class="fa-solid fa-weight-scale"></i>
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label>الطول (سم):</label>
+                        <div class="input-wrapper">
+                            <input type="number" step="0.1" id="height" placeholder="مثال: 135" required>
+                            <i class="fa-solid fa-ruler-vertical"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label>هل يعاني اللاعب من أي أمراض؟</label>
+                    <textarea id="diseases" placeholder="اكتب لا يوجد في حالة عدم وجود أمراض"></textarea>
+                </div>
+                <div class="field-group">
+                    <label>هل حقق اللاعب أي بطولات أو إنجازات؟</label>
+                    <textarea id="achievements" placeholder="اذكر البطولات أو الإنجازات إن وجدت، أو اكتب لا يوجد"></textarea>
                 </div>
             </div>
 
@@ -492,8 +663,9 @@
 
     <!-- قسم الإدارة -->
     <div id="admin-view" class="view-section">
+        <button class="btn-back" onclick="changeMode('landing-view')"><i class="fa-solid fa-arrow-right"></i> رجوع للرئيسية</button>
         <div id="adminLoginView" class="admin-gate">
-            <h3 style="text-align:center;margin-bottom:20px;color:#fff;border-bottom:2px solid var(--accent-red);padding-bottom:8px">تسجيل دخول معتمد</h3>
+            <h3 style="text-align:center;margin-bottom:20px;color:var(--text-main);border-bottom:2px solid var(--line-black);padding-bottom:8px">تسجيل دخول معتمد</h3>
             <div class="field-group">
                 <label>اسم المستخدم:</label>
                 <div class="input-wrapper">
@@ -515,44 +687,22 @@
 
         <div id="adminDashboardView" style="display:none">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px">
-                <h3 style="color:#fff;font-weight:700">
-                    <i class="fa-solid fa-table-list" style="color:var(--accent-red-glow)"></i> لوحة إدارة اللاعبين
+                <h3 style="color:var(--text-main);font-weight:700">
+                    <i class="fa-solid fa-table-list" style="color:var(--accent-green)"></i> لوحة إدارة اللاعبين
                 </h3>
-                <button onclick="logoutAdmin()" style="padding:8px 18px;background:#ef4444;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:700">
+                <button onclick="logoutAdmin()" style="padding:8px 18px;background:#dc2626;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:700">
                     <i class="fa-solid fa-power-off"></i> خروج
                 </button>
             </div>
 
             <!-- عداد الإحصائيات -->
-            <div class="stats-bar">
-                <div class="stat-card">
-                    <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
-                    <div class="stat-info">
-                        <div class="stat-num" id="totalCount">0</div>
-                        <div class="stat-label">إجمالي اللاعبين</div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon"><i class="fa-solid fa-school"></i></div>
-                    <div class="stat-info">
-                        <div class="stat-num" id="schoolCount">0</div>
-                        <div class="stat-label">فئة مدارس</div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon"><i class="fa-solid fa-child-reaching"></i></div>
-                    <div class="stat-info">
-                        <div class="stat-num" id="juniorCount">0</div>
-                        <div class="stat-label">فئة جونيور</div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon"><i class="fa-solid fa-person"></i></div>
-                    <div class="stat-info">
-                        <div class="stat-num" id="seniorCount">0</div>
-                        <div class="stat-label">كادت + سينيور</div>
-                    </div>
-                </div>
+            <div class="stats-bar" id="statsBar"></div>
+
+            <!-- ازرار التصدير -->
+            <div class="export-bar">
+                <button class="btn-export" onclick="exportExcel()"><i class="fa-solid fa-file-excel"></i> تصدير Excel</button>
+                <button class="btn-export" onclick="exportWord()"><i class="fa-solid fa-file-word"></i> تصدير Word</button>
+                <button class="btn-export" onclick="exportPDF()"><i class="fa-solid fa-file-pdf"></i> تصدير PDF</button>
             </div>
 
             <!-- بحث -->
@@ -567,11 +717,11 @@
                         <tr>
                             <th>اللاعب</th>
                             <th>الرقم القومي</th>
+                            <th>الهاتف الأساسي</th>
+                            <th>الهاتف الإضافي</th>
                             <th>الفئة</th>
                             <th>الحزام</th>
-                            <th>الهاتف</th>
-                            <th>ولي الأمر</th>
-                            <th>الشهادة</th>
+                            <th>الملف</th>
                             <th>الإجراءات</th>
                         </tr>
                     </thead>
@@ -580,6 +730,8 @@
             </div>
         </div>
     </div>
+
+    <footer class="site-footer">جميع الحقوق محفوظة - أحمد كاشو 01206675246</footer>
 </div>
 
 <script>
@@ -587,27 +739,29 @@
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZmZXBid3Fva21jZXR0aWV4a3lqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5ODk5NzAsImV4cCI6MjA5NTU2NTk3MH0.W2jsY5nBWmcahPpyoS0fxi822yki4ThJa7xWxABDXD4";
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+    const AGE_CATEGORIES = ["براعم", "ناشئين", "كادت", "جونيور", "سينيور"];
+
     let allPlayers = [];
 
     function changeMode(viewId) {
         document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.mode-btn').forEach(el => el.classList.remove('active'));
         document.getElementById(viewId).classList.add('active');
-        if (viewId === 'reg-view') {
-            document.getElementById('btn-tab-reg').classList.add('active');
-            document.getElementById('dynamic-subtitle').innerText = "نظام التسجيل الذكي للأكاديمية واللاعبين";
-        } else {
-            document.getElementById('btn-tab-admin').classList.add('active');
-            document.getElementById('dynamic-subtitle').innerText = "لوحة المراقبة وإدارة شؤون اللاعبين";
-        }
+        const subtitles = {
+            'landing-view': "نظام التسجيل الذكي للأكاديمية واللاعبين",
+            'reg-view': "تسجيل لاعب جديد",
+            'check-view': "التحقق من تسجيلك",
+            'admin-view': "لوحة المراقبة وإدارة شؤون اللاعبين"
+        };
+        document.getElementById('dynamic-subtitle').innerText = subtitles[viewId] || "";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function updateFileInfo(input) {
         if (input.files && input.files[0]) {
             const box = input.closest('.file-upload-box');
-            box.style.borderColor = 'var(--accent-red-glow)';
+            box.style.borderColor = 'var(--accent-green-glow)';
             box.querySelector('p').innerText = "تم اختيار: " + input.files[0].name;
-            box.querySelector('p').style.color = 'var(--accent-red-glow)';
+            box.querySelector('p').style.color = 'var(--accent-green-glow)';
         }
     }
 
@@ -642,7 +796,6 @@
     document.getElementById('premiumForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         try {
-            alert("جاري رفع المستندات وحفظ طلب اللاعب... انتظر ثواني 🏆");
             const playerImgFile = document.getElementById('playerImg').files[0];
             const birthCertFile = document.getElementById('birthCertImg').files[0];
             const playerImgUrl = await uploadFileToStorage('player-images', playerImgFile);
@@ -657,23 +810,71 @@
                 category: document.getElementById('category').value,
                 belt_grade: document.getElementById('beltGrade').value,
                 parent_job: document.getElementById('parentJob').value,
+                weight: document.getElementById('weight').value,
+                height: document.getElementById('height').value,
+                diseases: document.getElementById('diseases').value,
+                achievements: document.getElementById('achievements').value,
                 player_image_url: playerImgUrl,
                 birth_certificate_url: birthCertUrl
             };
             const { error } = await supabaseClient.from('players').insert([playerData]);
             if (error) throw error;
-            const askAnother = confirm('تم إرسال طلب اللاعب بنجاح تام! 🎉\n\nهل تريد تسجيل لاعب آخر؟');
+            alert('تم إرسال طلب اللاعب بنجاح تام! 🎉');
             document.getElementById('premiumForm').reset();
             document.querySelectorAll('.file-upload-box p').forEach(p => {
                 p.innerText = "اختر الملف المطلوب";
                 p.style.color = 'var(--text-muted)';
             });
-            document.querySelectorAll('.file-upload-box').forEach(b => b.style.borderColor = 'rgba(255,255,255,0.15)');
-            if (!askAnother) alert('شكراً لك! تم إنهاء التسجيل بنجاح. بالتوفيق لأبطال الأكاديمية.');
+            document.querySelectorAll('.file-upload-box').forEach(b => b.style.borderColor = 'var(--line-black)');
+            changeMode('landing-view');
         } catch (error) {
             alert('حدث خطأ أثناء الإرسال: ' + error.message);
         }
     });
+
+    // ===== تحقق من التسجيل =====
+    async function checkRegistration() {
+        const phone = document.getElementById('checkPhone').value.trim();
+        const box = document.getElementById('checkResultBox');
+        if (!phone) { alert('من فضلك اكتب رقم الهاتف'); return; }
+        const { data, error } = await supabaseClient.from('players').select('*')
+            .or(`phone_1.eq.${phone},phone_2.eq.${phone}`);
+        if (error) { alert('حدث خطأ أثناء البحث: ' + error.message); return; }
+        box.style.display = 'block';
+        if (!data || data.length === 0) {
+            box.innerHTML = `
+                <div class="form-section-card" style="text-align:center">
+                    <p style="margin-bottom:15px;color:var(--text-muted)">لا يوجد تسجيل بهذا الرقم. يمكنك التسجيل الآن.</p>
+                    <button class="btn-premium" onclick="changeMode('reg-view')"><i class="fa-solid fa-user-plus"></i> تسجيل الآن</button>
+                </div>`;
+            return;
+        }
+        const player = data[0];
+        box.innerHTML = `
+            <div class="form-section-card">
+                <div class="section-title"><i class="fa-solid fa-circle-check"></i> بياناتك مسجلة</div>
+                <div class="profile-view-grid">
+                    <div class="profile-view-item"><span class="pv-label">الاسم</span><span class="pv-value">${player.name || ''}</span></div>
+                    <div class="profile-view-item"><span class="pv-label">الفئة العمرية</span><span class="pv-value">${player.category || ''}</span></div>
+                    <div class="profile-view-item"><span class="pv-label">درجة الحزام</span><span class="pv-value">${player.belt_grade || ''}</span></div>
+                    <div class="profile-view-item"><span class="pv-label">الرقم القومي</span><span class="pv-value">${player.national_id || ''}</span></div>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-save" onclick='openEditModal(${JSON.stringify(player).replace(/'/g, "&#39;")})'><i class="fa-solid fa-pen"></i> تعديل بياناتي</button>
+                    <button class="btn-cancel" onclick="deleteAndReregister('${player.id}')"><i class="fa-solid fa-rotate"></i> حذف وتسجيل من جديد</button>
+                </div>
+            </div>`;
+    }
+
+    async function deleteAndReregister(id) {
+        const confirmDel = confirm('هل أنت متأكد من حذف بياناتك الحالية والتسجيل من جديد؟');
+        if (!confirmDel) return;
+        const { error } = await supabaseClient.from('players').delete().eq('id', id);
+        if (error) { alert('خطأ في الحذف: ' + error.message); return; }
+        document.getElementById('checkResultBox').style.display = 'none';
+        document.getElementById('checkPhone').value = '';
+        changeMode('reg-view');
+    }
 
     async function fetchPlayersData() {
         const { data, error } = await supabaseClient.from('players').select('*').order('created_at', { ascending: false });
@@ -684,10 +885,27 @@
     }
 
     function updateStats(data) {
-        document.getElementById('totalCount').innerText = data.length;
-        document.getElementById('schoolCount').innerText = data.filter(p => p.category === 'مدارس').length;
-        document.getElementById('juniorCount').innerText = data.filter(p => p.category === 'جونيور').length;
-        document.getElementById('seniorCount').innerText = data.filter(p => p.category === 'كادت' || p.category === 'سينيور').length;
+        const bar = document.getElementById('statsBar');
+        let html = `
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+                <div class="stat-info">
+                    <div class="stat-num">${data.length}</div>
+                    <div class="stat-label">إجمالي اللاعبين</div>
+                </div>
+            </div>`;
+        AGE_CATEGORIES.forEach(cat => {
+            const count = data.filter(p => p.category === cat).length;
+            html += `
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-person"></i></div>
+                <div class="stat-info">
+                    <div class="stat-num">${count}</div>
+                    <div class="stat-label">${cat}</div>
+                </div>
+            </div>`;
+        });
+        bar.innerHTML = html;
     }
 
     function renderTable(data) {
@@ -698,6 +916,7 @@
             return;
         }
         data.forEach(player => {
+            const safeJson = JSON.stringify(player).replace(/"/g, '&quot;');
             tbody.innerHTML += `
                 <tr>
                     <td>
@@ -706,15 +925,19 @@
                             <span style="font-weight:700">${player.name}</span>
                         </div>
                     </td>
-                    <td>${player.national_id}</td>
-                    <td><span class="player-badge">${player.category}</span></td>
-                    <td style="color:#fff;font-weight:600">${player.belt_grade}</td>
-                    <td>${player.phone_1}</td>
-                    <td>${player.parent_job}</td>
-                    <td><a href="${player.birth_certificate_url}" target="_blank" style="color:var(--accent-red-glow);font-weight:bold;text-decoration:none"><i class="fa-solid fa-file-image"></i> عرض</a></td>
+                    <td>${player.national_id || ''}</td>
+                    <td>${player.phone_1 || ''}</td>
+                    <td>${player.phone_2 || '—'}</td>
+                    <td><span class="player-badge">${player.category || ''}</span></td>
+                    <td style="color:var(--text-main);font-weight:600">${player.belt_grade || ''}</td>
+                    <td>
+                        <button class="btn-view" onclick="openProfileModal(${safeJson})">
+                            <i class="fa-solid fa-folder-open"></i> عرض
+                        </button>
+                    </td>
                     <td>
                         <div class="action-btns">
-                            <button class="btn-edit" onclick="openEditModal(${JSON.stringify(player).replace(/"/g, '&quot;')})">
+                            <button class="btn-edit" onclick="openEditModal(${safeJson})">
                                 <i class="fa-solid fa-pen"></i> تعديل
                             </button>
                             <button class="btn-delete" onclick="deletePlayer('${player.id}', '${player.name}')">
@@ -729,10 +952,46 @@
     function filterTable() {
         const q = document.getElementById('searchInput').value.toLowerCase();
         const filtered = allPlayers.filter(p =>
-            p.name.toLowerCase().includes(q) ||
+            (p.name && p.name.toLowerCase().includes(q)) ||
             (p.national_id && p.national_id.includes(q))
         );
         renderTable(filtered);
+    }
+
+    // ===== عرض ملف اللاعب =====
+    function openProfileModal(player) {
+        const content = document.getElementById('profileModalContent');
+        content.innerHTML = `
+            <div class="modal-title"><i class="fa-solid fa-folder-open"></i> ملف اللاعب</div>
+            <div style="text-align:center">
+                <img src="${player.player_image_url}" class="profile-photo" onerror="this.src='https://via.placeholder.com/90'">
+            </div>
+            <div class="profile-view-grid">
+                <div class="profile-view-item"><span class="pv-label">الاسم</span><span class="pv-value">${player.name || ''}</span></div>
+                <div class="profile-view-item"><span class="pv-label">الرقم القومي</span><span class="pv-value">${player.national_id || ''}</span></div>
+                <div class="profile-view-item"><span class="pv-label">تاريخ الميلاد</span><span class="pv-value">${player.birth_date || ''}</span></div>
+                <div class="profile-view-item"><span class="pv-label">العنوان</span><span class="pv-value">${player.address || ''}</span></div>
+                <div class="profile-view-item"><span class="pv-label">الهاتف الأساسي</span><span class="pv-value">${player.phone_1 || ''}</span></div>
+                <div class="profile-view-item"><span class="pv-label">الهاتف الإضافي</span><span class="pv-value">${player.phone_2 || '—'}</span></div>
+                <div class="profile-view-item"><span class="pv-label">الفئة العمرية</span><span class="pv-value">${player.category || ''}</span></div>
+                <div class="profile-view-item"><span class="pv-label">درجة الحزام</span><span class="pv-value">${player.belt_grade || ''}</span></div>
+                <div class="profile-view-item"><span class="pv-label">الوزن</span><span class="pv-value">${player.weight || '—'} كجم</span></div>
+                <div class="profile-view-item"><span class="pv-label">الطول</span><span class="pv-value">${player.height || '—'} سم</span></div>
+                <div class="profile-view-item"><span class="pv-label">تخصص ولي الأمر</span><span class="pv-value">${player.parent_job || ''}</span></div>
+                <div class="profile-view-item"><span class="pv-label">شهادة الميلاد</span><span class="pv-value"><a href="${player.birth_certificate_url}" target="_blank" style="color:var(--accent-green)">عرض المستند</a></span></div>
+            </div>
+            <div class="profile-view-item" style="border-bottom:none">
+                <span class="pv-label">أمراض يعاني منها اللاعب</span>
+                <span class="pv-value">${player.diseases || 'لا يوجد'}</span>
+            </div>
+            <div class="profile-view-item" style="border-bottom:none">
+                <span class="pv-label">بطولات / إنجازات</span>
+                <span class="pv-value">${player.achievements || 'لا يوجد'}</span>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeModal('profileModal')"><i class="fa-solid fa-xmark"></i> إغلاق</button>
+            </div>`;
+        document.getElementById('profileModal').classList.add('open');
     }
 
     // ===== تعديل =====
@@ -746,12 +1005,16 @@
         document.getElementById('editPhone2').value = player.phone_2 || '';
         document.getElementById('editCategory').value = player.category || '';
         document.getElementById('editBeltGrade').value = player.belt_grade || '';
+        document.getElementById('editWeight').value = player.weight || '';
+        document.getElementById('editHeight').value = player.height || '';
         document.getElementById('editParentJob').value = player.parent_job || '';
+        document.getElementById('editDiseases').value = player.diseases || '';
+        document.getElementById('editAchievements').value = player.achievements || '';
         document.getElementById('editModal').classList.add('open');
     }
 
-    function closeModal() {
-        document.getElementById('editModal').classList.remove('open');
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('open');
     }
 
     async function saveEdit() {
@@ -765,13 +1028,21 @@
             phone_2: document.getElementById('editPhone2').value,
             category: document.getElementById('editCategory').value,
             belt_grade: document.getElementById('editBeltGrade').value,
+            weight: document.getElementById('editWeight').value,
+            height: document.getElementById('editHeight').value,
             parent_job: document.getElementById('editParentJob').value,
+            diseases: document.getElementById('editDiseases').value,
+            achievements: document.getElementById('editAchievements').value,
         };
         const { error } = await supabaseClient.from('players').update(updatedData).eq('id', id);
         if (error) { alert('خطأ في التعديل: ' + error.message); return; }
-        closeModal();
+        closeModal('editModal');
         alert('✅ تم تعديل بيانات اللاعب بنجاح!');
-        fetchPlayersData();
+        if (document.getElementById('adminDashboardView').style.display === 'block') {
+            fetchPlayersData();
+        } else {
+            document.getElementById('checkResultBox').style.display = 'none';
+        }
     }
 
     // ===== حذف =====
@@ -784,10 +1055,73 @@
         fetchPlayersData();
     }
 
-    // إغلاق المودال بالضغط خارجه
+    // إغلاق المودالات بالضغط خارجها
     document.getElementById('editModal').addEventListener('click', function(e) {
-        if (e.target === this) closeModal();
+        if (e.target === this) closeModal('editModal');
     });
+    document.getElementById('profileModal').addEventListener('click', function(e) {
+        if (e.target === this) closeModal('profileModal');
+    });
+
+    // ===== التصدير =====
+    function exportRows() {
+        return allPlayers.map(p => ({
+            'الاسم': p.name || '',
+            'الرقم القومي': p.national_id || '',
+            'تاريخ الميلاد': p.birth_date || '',
+            'العنوان': p.address || '',
+            'الهاتف الأساسي': p.phone_1 || '',
+            'الهاتف الإضافي': p.phone_2 || '',
+            'الفئة العمرية': p.category || '',
+            'درجة الحزام': p.belt_grade || '',
+            'الوزن': p.weight || '',
+            'الطول': p.height || '',
+            'تخصص ولي الأمر': p.parent_job || '',
+            'أمراض': p.diseases || '',
+            'إنجازات': p.achievements || ''
+        }));
+    }
+
+    function exportExcel() {
+        if (!allPlayers.length) { alert('لا توجد بيانات للتصدير'); return; }
+        const ws = XLSX.utils.json_to_sheet(exportRows());
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'اللاعبين');
+        XLSX.writeFile(wb, 'players_export.xlsx');
+    }
+
+    function exportWord() {
+        if (!allPlayers.length) { alert('لا توجد بيانات للتصدير'); return; }
+        const rows = exportRows();
+        const headers = Object.keys(rows[0]);
+        let tableHtml = '<table border="1" style="border-collapse:collapse;width:100%;font-family:Arial" dir="rtl">';
+        tableHtml += '<tr>' + headers.map(h => `<th style="padding:6px;background:#eee">${h}</th>`).join('') + '</tr>';
+        rows.forEach(r => {
+            tableHtml += '<tr>' + headers.map(h => `<td style="padding:6px">${r[h]}</td>`).join('') + '</tr>';
+        });
+        tableHtml += '</table>';
+        const html = `<html><head><meta charset="utf-8"></head><body dir="rtl">${tableHtml}</body></html>`;
+        const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'players_export.doc';
+        link.click();
+    }
+
+    function exportPDF() {
+        if (!allPlayers.length) { alert('لا توجد بيانات للتصدير'); return; }
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'landscape' });
+        const rows = exportRows();
+        const headers = Object.keys(rows[0]);
+        doc.autoTable({
+            head: [headers],
+            body: rows.map(r => headers.map(h => r[h])),
+            styles: { font: 'helvetica', fontSize: 8 },
+            headStyles: { fillColor: [22, 163, 74] }
+        });
+        doc.save('players_export.pdf');
+    }
 </script>
 </body>
 </html>
