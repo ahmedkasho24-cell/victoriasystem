@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Victoria College Taekwondo Academy System</title>
+    <title>Victoria College Academy System</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
@@ -185,6 +185,13 @@
             gap: 10px; transition: 0.3s;
         }
         .btn-premium:hover { transform: translateY(-2px); box-shadow: 0 15px 30px rgba(22,163,74,0.4); filter: brightness(1.1); }
+        .btn-premium:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+        .spinner {
+            width: 18px; height: 18px; border: 3px solid rgba(255,255,255,0.4);
+            border-top-color: #ffffff; border-radius: 50%;
+            animation: spin 0.7s linear infinite; display: inline-block;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         .admin-gate {
             max-width: 420px; margin: 40px auto;
@@ -655,8 +662,8 @@
                 </div>
             </div>
 
-            <button type="submit" class="btn-premium">
-                <i class="fa-solid fa-circle-check"></i> ارسال الطلب
+            <button type="submit" class="btn-premium" id="submitBtn">
+                <i class="fa-solid fa-circle-check"></i> <span id="submitBtnText">ارسال الطلب</span>
             </button>
         </form>
     </div>
@@ -784,8 +791,46 @@
         document.getElementById('adminPass').value = '';
     }
 
+    // يضغط الصورة لو حجمها كبير أو أبعادها كبيرة، عشان يسرّع الرفع
+    function compressImage(file, maxDimension = 1280, quality = 0.75) {
+        return new Promise((resolve, reject) => {
+            if (!file.type.startsWith('image/') || file.type === 'image/gif') {
+                resolve(file);
+                return;
+            }
+            const img = new Image();
+            const reader = new FileReader();
+            reader.onload = (e) => { img.src = e.target.result; };
+            reader.onerror = reject;
+            img.onload = () => {
+                let { width, height } = img;
+                if (width > maxDimension || height > maxDimension) {
+                    if (width > height) {
+                        height = Math.round(height * (maxDimension / width));
+                        width = maxDimension;
+                    } else {
+                        width = Math.round(width * (maxDimension / height));
+                        height = maxDimension;
+                    }
+                }
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                canvas.toBlob((blob) => {
+                    if (!blob) { resolve(file); return; }
+                    const compressedFile = new File([blob], file.name, { type: 'image/jpeg' });
+                    // لو الملف المضغوط أكبر غريب من الأصلي (نادر) استخدم الأصلي
+                    resolve(compressedFile.size < file.size ? compressedFile : file);
+                }, 'image/jpeg', quality);
+            };
+            img.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
+
     async function uploadFileToStorage(bucket, file) {
-        const fileExt = file.name.split('.').pop();
+        const fileExt = file.type === 'image/jpeg' ? 'jpg' : file.name.split('.').pop();
         const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
         const { data, error } = await supabaseClient.storage.from(bucket).upload(fileName, file);
         if (error) throw error;
@@ -793,13 +838,34 @@
         return urlData.publicUrl;
     }
 
+    function setSubmitLoading(loading) {
+        const btn = document.getElementById('submitBtn');
+        const text = document.getElementById('submitBtnText');
+        btn.disabled = loading;
+        if (loading) {
+            btn.innerHTML = '<span class="spinner"></span> <span>جاري الإرسال...</span>';
+        } else {
+            btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> <span id="submitBtnText">ارسال الطلب</span>';
+        }
+    }
+
     document.getElementById('premiumForm').addEventListener('submit', async (e) => {
         e.preventDefault();
+        setSubmitLoading(true);
         try {
-            const playerImgFile = document.getElementById('playerImg').files[0];
-            const birthCertFile = document.getElementById('birthCertImg').files[0];
-            const playerImgUrl = await uploadFileToStorage('player-images', playerImgFile);
-            const birthCertUrl = await uploadFileToStorage('birth-certificates', birthCertFile);
+            const playerImgFileRaw = document.getElementById('playerImg').files[0];
+            const birthCertFileRaw = document.getElementById('birthCertImg').files[0];
+
+            // ضغط الصورتين أولاً، وبعدين رفعهم مع بعض بالتوازي بدل واحدة ورا التانية
+            const [playerImgFile, birthCertFile] = await Promise.all([
+                compressImage(playerImgFileRaw),
+                compressImage(birthCertFileRaw)
+            ]);
+            const [playerImgUrl, birthCertUrl] = await Promise.all([
+                uploadFileToStorage('player-images', playerImgFile),
+                uploadFileToStorage('birth-certificates', birthCertFile)
+            ]);
+
             const playerData = {
                 name: document.getElementById('playerName').value,
                 national_id: document.getElementById('nationalId').value,
@@ -829,6 +895,8 @@
             changeMode('landing-view');
         } catch (error) {
             alert('حدث خطأ أثناء الإرسال: ' + error.message);
+        } finally {
+            setSubmitLoading(false);
         }
     });
 
